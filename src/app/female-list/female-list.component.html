@@ -1,0 +1,14 @@
+<p>Last 5 females</p>
+<mat-list *ngFor="let user of femaleUsers()">
+    <mat-list-item style="background-color: lightgray; width: 100%;">
+        <div style="display: flex; justify-content: space-between;">
+            <span style="display: flex; align-items: center;">{{user.name}}</span>
+            <span style="display: flex; align-items: center; cursor: pointer;">
+                {{user.birthDate}}
+                <button (click)="onRemoveUser(user.id)" mat-icon-button>
+                    <mat-icon fontIcon="delete"></mat-icon>
+                </button>  
+            </span>
+        </div>
+    </mat-list-item>
+</mat-list>

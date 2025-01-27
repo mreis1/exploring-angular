@@ -1,0 +1,17 @@
+<form [formGroup]="form" (submit)="onSubmit()">
+    <mat-radio-group formControlName="gender">
+        <mat-radio-button value="Male">Male</mat-radio-button>
+        <mat-radio-button value="Female">Female</mat-radio-button>
+    </mat-radio-group>
+    <mat-form-field style="display: block;">
+        <mat-label>Name</mat-label>
+        <input type="text" matInput formControlName="name" />
+    </mat-form-field>
+    <mat-form-field>
+        <mat-label>Date</mat-label>
+        <input [readonly]="true" placeholder="Date" matInput [matDatepicker]="picker" formControlName="birthDate"/>
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+    <button type="submit" [disabled]="form.invalid" mat-raised-button style="display: block;">Adicionar</button>
+</form>
