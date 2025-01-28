@@ -11,6 +11,8 @@ export class UserService {
   //users$ = this.users.asObservable();
   usersSignal = signal<Users[]>([]);
 
+  currentUserSignal = signal<Users | undefined | null>(undefined);
+
   maleUsers = computed(() => this.usersSignal().filter(user => user.gender.toLowerCase() === 'male'));
   femaleUsers = computed(() => this.usersSignal().filter(user => user.gender.toLowerCase() === 'female'));
 
@@ -81,8 +83,10 @@ export class UserService {
   //  return this.users$;
   //}
 
-  addUser(data: {gender: string, name: string, birthDate: string}): void {
+  addUser(data: {email: string, password: string, gender: string, name: string, birthDate: string}): void {
     const newUser: Users = {
+      email: data.email,
+      password: data.password,
       gender: data.gender,
       name: data.name,
       birthDate: data.birthDate,

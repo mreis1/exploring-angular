@@ -33,10 +33,20 @@ export class FormComponent {
   userService = inject(UserService);
 
   form: FormGroup<{
+    email: FormControl<string>;
+    password: FormControl<string>;
     gender: FormControl<string>;
     name: FormControl<string>;
     birthDate: FormControl<string>;
   }> = new FormGroup({
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
+    }),
+    password: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
     gender: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required],
