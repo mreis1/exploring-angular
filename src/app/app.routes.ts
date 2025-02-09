@@ -1,16 +1,35 @@
 import { Routes } from '@angular/router';
-import { AppComponent } from './app.component';
+import { HomeComponent } from './home/home.component';
 import { AuthComponent } from './auth/auth.component';
+import { StreamComponent } from './stream/stream.component';
+import { authGuard } from './auth.guard';
 
 export const routes: Routes = [
     {
-        path: '',
-        component: AppComponent,
-        title: 'App'
+        path: 'home',
+        component: HomeComponent,
+        title: 'Home',
+        canActivate: [authGuard]
+    },
+    {
+        path: 'stream',
+        component: StreamComponent,
+        title: 'Stream',
+        canActivate: [authGuard]    
     },
     {
         path: 'auth',
         component: AuthComponent,
-        title: 'Auth'
+        title: 'Auth',   
+    },
+    {
+        path: '',
+        redirectTo: '/auth',
+        pathMatch: 'full'
+    },
+    {
+        path: '**',
+        redirectTo: '/auth',
+        pathMatch: 'full'
     }
 ];

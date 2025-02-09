@@ -1,0 +1,40 @@
+@if (visibleForm) {
+    <form (submit)="addTracker()" [formGroup]="trackerForm">
+        <h2>New Tracker</h2>
+        <div class="toggle-button-div">
+            <h4>Device</h4>
+            <button (click)="toggleForm()" mat-button>New</button>
+        </div>
+        <mat-form-field class="input-size" appearance="outline">
+            <mat-select formControlName="id_device">
+                @for (device of data.devices; track device) {
+                <mat-option [value]="device.id">{{ device.name }}</mat-option>
+                } @if (trackerForm.hasError('required')) {
+                <mat-error>Please choose a device</mat-error>
+                }
+              </mat-select>
+        </mat-form-field>
+            <button class="submit-button" type="submit" [disabled]="trackerForm.invalid" mat-raised-button>Save</button>   
+        
+    </form>    
+} @else {
+    <form (submit)="addDevice()" [formGroup]="deviceForm">
+        <div class="toggle-button-div back">
+            <button (click)="toggleForm()" mat-icon-button>
+                <mat-icon>arrow_back</mat-icon>   
+            </button>
+            <h2>New Device</h2>
+        </div>
+        <h4>Device Name</h4>
+        <mat-form-field class="input-size" appearance="outline">
+            <input type="text" matInput formControlName="name"/>
+        </mat-form-field>
+        <h4>Station Name</h4>
+        <mat-form-field class="input-size" appearance="outline">
+            <input type="text" matInput formControlName="stationName"/>
+        </mat-form-field>
+            <button class="submit-button" type="submit" [disabled]="deviceForm.invalid" mat-raised-button>Save</button>  
+       
+    </form>
+}
+

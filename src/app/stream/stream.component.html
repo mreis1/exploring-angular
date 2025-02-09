@@ -1,0 +1,48 @@
+<app-header></app-header>
+<div class="container">
+  <mat-grid-list *ngFor="let tracker of trackers" [cols]="cols" gutterSize="10px" rowHeight="1:1" class="grid">
+    <div class="device block">
+      <div class="device-header">
+        <div>
+          <span>{{ tracker.name }}</span>
+          <span>{{ tracker.stationName }}</span>
+        </div>
+        <div>
+          <span>Activity over past </span>
+          <span>10 min</span>
+        </div>
+      </div>
+      <mat-card appearance="outlined" class="card">
+        <mat-card-content>
+          <div *ngFor="let event of events">
+            <div class="time">
+              <span>10h31</span>
+              <span>à l'instant</span>
+            </div>
+            <div class="item">
+              <img *ngIf="getUser(event.id_user)?.image" [src]="getUser(event.id_user)?.image" mat-card-avatar class="avatar" />
+              <img *ngIf="!getUser(event.id_user)?.image" src="https://material.angular.io/assets/img/examples/shiba2.jpg" mat-card-avatar class="avatar" />
+              <div>
+                <p>{{ getUser(event.id_user)?.name }}</p>
+                <p>{{ event.state }}</p>
+              </div>
+            </div>
+          </div> 
+        </mat-card-content>
+        <mat-card-footer class="footer">
+          <button (click)="openEventDialogue()" mat-fab>
+            <mat-icon>add</mat-icon>
+          </button>
+        </mat-card-footer>
+      </mat-card>
+    </div>
+  </mat-grid-list>
+  <div class="tracker">
+    <p>Want to track more ac points?</p>
+    <p>Just click the button below and follow along.</p>
+    <button (click)="openTrackerDialogue()" mat-raised-button>
+        <mat-icon>add</mat-icon>
+        New Tracker
+    </button>
+  </div>
+</div>

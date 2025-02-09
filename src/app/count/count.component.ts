@@ -1,5 +1,5 @@
 import { Component, inject, Input } from '@angular/core';
-import { UserService } from '../users.service';
+import { UserService } from '../../services/users.service';
 import { CommonModule } from '@angular/common';
 import { Mode } from '../mode';
 

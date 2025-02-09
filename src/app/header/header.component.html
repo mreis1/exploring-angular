@@ -1,0 +1,10 @@
+<mat-toolbar class="toolbar">
+    <div>
+        <a (click)="setActive('home')" [ngClass]="{'active': activeLink === 'home'}" routerLink="/home">Users</a>
+        <a (click)="setActive('stream')" [ngClass]="{'active': activeLink === 'stream'}" routerLink="/stream">Stream</a>
+    </div>
+    <div>
+        <span>Hi, {{userService.currentUserSignal()?.name}}!</span>
+        <span (click)="onLogout()" mat-button>Logout</span>    
+    </div>
+</mat-toolbar>

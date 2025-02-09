@@ -1,0 +1,45 @@
+<form [formGroup]="eventForm">
+  <h2>Emit an event</h2>
+  <h4>Device</h4>
+  <mat-form-field appearance="outline" class="input-size">
+    <mat-select formControlName="id_device">
+      @for (tracker of data.trackers; track tracker) {
+      <mat-option [value]="tracker.id_device">{{ tracker.name }}</mat-option>
+      } @if (eventForm.hasError('required')) {
+      <mat-error>Please choose a device</mat-error>
+      }
+    </mat-select>
+  </mat-form-field>
+  <h4>State</h4>
+  <div>
+    <mat-radio-group formControlName="state">
+      <mat-radio-button value="Everthing ok">Valid</mat-radio-button>
+      <mat-radio-button value="Error">Error</mat-radio-button>
+    </mat-radio-group>
+    @if (eventForm.controls.state.value === "Error") {
+        <mat-form-field appearance="outline">
+            <mat-select value="Invalid" formControlName="errorCode">
+                <mat-option value="Invalid">Invalid</mat-option>
+                <mat-option value="Unauthorized">Unauthorized</mat-option>
+                <mat-option value="No subscription">No subscription</mat-option>
+            </mat-select>
+        </mat-form-field>
+    }
+  </div>
+  <h4>Who</h4>
+  <mat-form-field appearance="outline" class="input-size">
+    <mat-label>Type here to search a user</mat-label>
+    <input
+      type="text"
+      matInput
+      formControlName="id_user"
+      [matAutocomplete]="auto"
+    />
+    <mat-autocomplete #auto="matAutocomplete">
+      @for (user of users(); track user) {
+      <mat-option [value]="user.id">{{ user.name }}</mat-option>
+      }
+    </mat-autocomplete>
+  </mat-form-field>
+  <button class="button" type="submit" [disabled]="eventForm.invalid" mat-raised-button>Save</button>
+</form>

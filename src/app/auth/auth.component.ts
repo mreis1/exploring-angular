@@ -1,5 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { UserService } from '../users.service';
+import { Component, effect, inject } from '@angular/core';
+import { UserService } from '../../services/users.service';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatGridListModule } from '@angular/material/grid-list'
@@ -48,6 +48,7 @@ export class AuthComponent {
     gender: FormControl<string>;
     name: FormControl<string>;
     birthDate: FormControl<string>;
+    image: FormControl<any>;
   }> = new FormGroup({
     email: new FormControl('', {
       nonNullable: true,
@@ -69,33 +70,44 @@ export class AuthComponent {
       nonNullable: true,
       validators: [Validators.required],
     }),
+    image: new FormControl('', {
+      nonNullable: true,
+    })
   });
 
   onLogin(): void {
-    this.http.post<{message: string ,user: Users}>(
-      'http://localhost:3000/api/login',
+    this.http.post<{message: string, user: Users}>(
+      '/api/login',
       {
         user: this.loginForm.getRawValue(),
       }
     ).subscribe((response) => {
       console.log(response);
       this.userService.currentUserSignal.set(response.user);
-      this.router.navigateByUrl('/');
+      this.router.navigateByUrl('/home');
     })
   }
 
   onRegister() : void {
-    this.http.post<{message: string, user: Users}>(
-      'http://localhost:3000/api/register',
-      {
-        user: this.loginForm.getRawValue(),
-      }
-    ).subscribe((response) => {
-      console.log(response);
-      this.userService.currentUserSignal.set(response.user);
-      this.router.navigateByUrl('/');
-    })
+    const formValue = this.registerForm.getRawValue();
+    formValue.birthDate = new Date(formValue.birthDate).toISOString().slice(0,10);
+    const file = formValue.image.event?.target.files[0];
+    if (file) {
+      this.userService.upload(file);
+      const interval = setInterval(() => {
+        console.log("Checking filename signal:", this.userService.filename());
+        if (this.userService.filename()) { 
+          clearInterval(interval); 
+          formValue.image = this.userService.filename();
+          this.userService.register(formValue);
+          this.userService.filename.set(null);
+        }
+      }, 100);
+    } else {
+      this.userService.register(formValue);
+    } 
   }
+
 }
 
 

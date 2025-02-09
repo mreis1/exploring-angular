@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import {MatListModule} from '@angular/material/list';
 import {MatIconModule} from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { UserService } from '../users.service';
+import { UserService } from '../../services/users.service';
 import { Users } from '../users';
 
 

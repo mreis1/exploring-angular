@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import {MatListModule} from '@angular/material/list';
 import {MatIconModule} from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { UserService } from '../users.service';
+import { UserService } from '../../services/users.service';
 import { Mode } from '../mode';
 import { DatePipe } from '@angular/common';
 
@@ -22,7 +22,7 @@ export class UserListComponent {
   femaleUsers = this.userService.femaleUsers;
   maleUsers = this.userService.maleUsers;
 
-  onRemoveUser(id: string): void {
+  onRemoveUser(id: number): void {
     this.userService.removeUser(id);
   }
 }

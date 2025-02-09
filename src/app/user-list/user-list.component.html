@@ -4,7 +4,7 @@
     <div style="display: flex; justify-content: space-between">
       <span style="display: flex; align-items: center">{{ user.name }}</span>
       <span style="display: flex; align-items: center; cursor: pointer">
-        {{ user.birthDate | date:'shortData' }}
+        {{ user.birthDate | date:'shortDate' }}
         <button (click)="onRemoveUser(user.id)" mat-icon-button>
           <mat-icon fontIcon="delete"></mat-icon>
         </button>

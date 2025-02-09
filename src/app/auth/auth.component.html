@@ -2,30 +2,30 @@
     cols="2"
     rowHeight="2:1"
     gutterSize="25px"
-    style="display: grid; align-content: center; justify-items: center;"
+    style="margin-top: 120px; margin-left: 20px; margin-right: 20px;"
 >
-    <mat-grid-tile style="background-color: lightgray;">
-        <form [formGroup]="loginForm" (onSubmit)="onLogin()">
+    <mat-grid-tile style="background-color: lightgray; height: 50%;">
+        <form [formGroup]="loginForm" (submit)="onLogin()">
             <mat-form-field>
                 <mat-label>Email</mat-label>
                 <input type="text" matInput formControlName="email" />
             </mat-form-field>
-            <mat-form-field>
+            <mat-form-field style="display: block;">
                 <mat-label>Password</mat-label>
-                <input type="text" matInput formControlName="password" />
+                <input type="password" matInput formControlName="password" />
             </mat-form-field>
             <button type="submit" [disabled]="loginForm.invalid" mat-raised-button style="display: block;">Entrar</button>
         </form>
     </mat-grid-tile>
-    <mat-grid-tile style="background-color: lightgray;">
-        <form [formGroup]="registerForm" (onSubmit)="onRegister()">
+    <mat-grid-tile style="background-color: lightgray; height: 50%;">
+        <form [formGroup]="registerForm" (submit)="onRegister()">
             <mat-form-field>
                 <mat-label>Email</mat-label>
                 <input type="text" matInput formControlName="email" />
             </mat-form-field>
-            <mat-form-field>
+            <mat-form-field style="display: block;">
                 <mat-label>Password</mat-label>
-                <input type="text" matInput formControlName="password" />
+                <input type="password" matInput formControlName="password" />
             </mat-form-field>
             <mat-radio-group formControlName="gender">
                 <mat-radio-button value="Male">Male</mat-radio-button>
@@ -41,6 +41,10 @@
                 <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
                 <mat-datepicker #picker></mat-datepicker>
             </mat-form-field>
+            <div style="display: block;">
+                <mat-label>Image</mat-label>
+                <input type="file" formControlName="image" />
+            </div>
             <button type="submit" [disabled]="registerForm.invalid" mat-raised-button style="display: block;">Registar</button>
         </form>
     </mat-grid-tile>

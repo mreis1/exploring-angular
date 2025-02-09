@@ -12,7 +12,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
-import { UserService } from '../users.service';
+import { UserService } from '../../services/users.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-form',
@@ -31,6 +32,7 @@ import { UserService } from '../users.service';
 })
 export class FormComponent {
   userService = inject(UserService);
+  router = inject(Router);
 
   form: FormGroup<{
     email: FormControl<string>;
@@ -38,6 +40,7 @@ export class FormComponent {
     gender: FormControl<string>;
     name: FormControl<string>;
     birthDate: FormControl<string>;
+    image: FormControl<any>
   }> = new FormGroup({
     email: new FormControl('', {
       nonNullable: true,
@@ -59,6 +62,10 @@ export class FormComponent {
       nonNullable: true,
       validators: [Validators.required],
     }),
+    image: new FormControl('', {
+      nonNullable: true,
+    }),
+
   });
 
   //onSubmit(): void {

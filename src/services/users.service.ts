@@ -1,25 +1,73 @@
-import { computed, effect, Injectable, signal } from '@angular/core';
-import { Users } from './users';
-import { BehaviorSubject, map, Observable } from 'rxjs';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
+import { Users } from '../app/users';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar'
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { io, Socket } from 'socket.io-client';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
+  //private socket: Socket;
+  http = inject(HttpClient);
+  router = inject(Router);
+  
   //users = new BehaviorSubject<Users[]>([]);
   //users$ = this.users.asObservable();
   usersSignal = signal<Users[]>([]);
 
   currentUserSignal = signal<Users | undefined | null>(undefined);
+  isLogged = computed(() => this.currentUserSignal());
+
+  filename = signal<string | undefined | null>(null);
 
   maleUsers = computed(() => this.usersSignal().filter(user => user.gender.toLowerCase() === 'male'));
   femaleUsers = computed(() => this.usersSignal().filter(user => user.gender.toLowerCase() === 'female'));
 
   constructor(private snackBar: MatSnackBar) {
+  //  this.socket = io('http://localhost:4200/');
+//
+  //  this.socket.on("user-created", (newUser) => {
+  //    console.log("New user", newUser);
+  //    this.usersSignal.update((users) => [...users, newUser]);
+  //  })
+
     effect(() => {
       console.log(this.usersSignal());
+      console.log(this.filename());
     })
+  }
+
+  upload(file: File): void {
+    const formData = new FormData();
+    formData.append("file", file);
+    this.http.post<{ filename: string }>(
+      '/api/upload', 
+      formData
+    ).subscribe((response) => {
+      console.log("Upload response:", response); 
+      this.filename.set(response.filename);
+      console.log("Filename signal updated to:", this.filename());
+    });
+  }
+
+  register(formValue: any): void {
+    this.http.post<{message: string, user: Users}>(
+      '/api/register',
+      {
+        user: formValue,
+      }
+    ).subscribe((response) => {
+      console.log(response);
+      this.currentUserSignal.set(response.user);
+      this.router.navigateByUrl('/home');
+    })
+  }
+
+  getUsers(): void {
+    this.http.get<Users[]>('/api/users').subscribe((users) => this.usersSignal.set(users));
   }
 
   //addUser(data: {gender: string, name: string, birthDate: string}): Observable<Users> {
@@ -83,20 +131,21 @@ export class UserService {
   //  return this.users$;
   //}
 
-  addUser(data: {email: string, password: string, gender: string, name: string, birthDate: string}): void {
+  addUser(data: {email: string, password: string, gender: string, name: string, birthDate: string, image: string}): void {
     const newUser: Users = {
+      id: Math.random(),
       email: data.email,
       password: data.password,
       gender: data.gender,
       name: data.name,
       birthDate: data.birthDate,
-      id: Math.random().toString(16)
+      image: data.image
     }
     this.usersSignal.update(currentUsers => [...currentUsers, newUser]);
     this.snackBar.open(`User ${newUser.name} added successfully`, '', { duration: 2000 });
   }
 
-  removeUser(id: string): void {
+  removeUser(id: number): void {
     let removedUser: Users | null = null;
     this.usersSignal.update(currentUsers => {
       const userToRemove = currentUsers.find(user => user.id === id);
