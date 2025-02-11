@@ -15,7 +15,6 @@ import { MatIcon, MatIconModule } from '@angular/material/icon';
 })
 export class TrackerDialogueComponent {
   dialogueRef = inject(MatDialogRef<TrackerDialogueComponent>);
-  data = inject(MAT_DIALOG_DATA);
   socketService = inject(SocketService);
 
   message = '';

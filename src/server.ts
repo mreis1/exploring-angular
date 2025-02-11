@@ -211,7 +211,9 @@ if (isMainModule(import.meta.url)) {
       try {
         const query = "SELECT * FROM rxjs.event";
         const [events] = await db.execute(query);
+        console.log(events);
         callback({ success: true, events });
+        console.log(events);
       } catch (error) {
         callback({ success: false, message: "Error getting events", error});
       }
@@ -221,7 +223,9 @@ if (isMainModule(import.meta.url)) {
       try {
         const query = "SELECT rxjs.tracker.id, rxjs.tracker.id_device, rxjs.device.name, rxjs.device.stationName FROM rxjs.tracker INNER JOIN rxjs.device ON rxjs.tracker.id_device = rxjs.device.id";
         const [trackers] = await db.execute(query);
+        console.log(trackers);
         callback({ success: true, trackers });
+        console.log(trackers);
       } catch (error) {
         callback({ success: false, message: "Error getting trackers", error})
       }
@@ -242,10 +246,11 @@ if (isMainModule(import.meta.url)) {
   
     socket.on("create-event", async (eventData, callback) => {
       try {
-        const { id_device, state, errorCode, id_user } = eventData;
-        const query = "INSERT INTO rxjs.event (id_device, state, errorCode, id_user) VALUES (?, ?, ?, ?)";
-        const [result]: any = await db.execute(query, [id_device, state, errorCode, id_user]);
-        const newEvent = { id: result.insertId, id_device, state, errorCode, id_user };
+        let { id_device, state, error_code, id_user } = eventData;
+        error_code = error_code ?? null;
+        const query = "INSERT INTO rxjs.event (id_device, state, error_code, id_user) VALUES (?, ?, ?, ?)";
+        const [result]: any = await db.execute(query, [id_device, state, error_code, id_user]);
+        const newEvent = { id: result.insertId, id_device, state, error_code, id_user };
         io.emit("event-created", newEvent); 
         callback({ success: true, event: newEvent});
       } catch (error) {
@@ -258,9 +263,10 @@ if (isMainModule(import.meta.url)) {
         const { id_device } = trackerData;
         const query = "INSERT INTO rxjs.tracker (id_device) VALUES (?)";
         const [result]: any = await db.execute(query, [id_device]);
-        const newTracker = { id: result.insertId, id_device };
-        io.emit("tracker-created", newTracker);
-        callback({ success: true, tracker: newTracker});
+        const querySelect = "SELECT rxjs.tracker.id, rxjs.tracker.id_device, rxjs.device.name, rxjs.device.stationName FROM rxjs.tracker INNER JOIN rxjs.device ON rxjs.tracker.id_device = rxjs.device.id WHERE rxjs.tracker.id = ?"
+        const [trackerDetails] = await db.execute(querySelect, [result.insertId]);
+        io.emit("tracker-created", trackerDetails);
+        callback({ success: true, tracker: trackerDetails});
       } catch (error) {
         callback({ success: false, message: "Error creating tracker", error});
       }

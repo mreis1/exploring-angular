@@ -1,6 +1,6 @@
 <app-header></app-header>
 <div class="container">
-  <mat-grid-list *ngFor="let tracker of trackers" [cols]="cols" gutterSize="10px" rowHeight="1:1" class="grid">
+  <mat-grid-list *ngFor="let tracker of socketService.trackersSignal()" [cols]="cols" gutterSize="10px" rowHeight="1:1" class="grid">
     <div class="device block">
       <div class="device-header">
         <div>
@@ -14,7 +14,7 @@
       </div>
       <mat-card appearance="outlined" class="card">
         <mat-card-content>
-          <div *ngFor="let event of events">
+          <div *ngFor="let event of socketService.eventsSignal()">
             <div class="time">
               <span>10h31</span>
               <span>à l'instant</span>
@@ -24,7 +24,8 @@
               <img *ngIf="!getUser(event.id_user)?.image" src="https://material.angular.io/assets/img/examples/shiba2.jpg" mat-card-avatar class="avatar" />
               <div>
                 <p>{{ getUser(event.id_user)?.name }}</p>
-                <p>{{ event.state }}</p>
+                <p class="valid" *ngIf="!event.error_code">{{ event.state }}</p>
+                <p class="error" *ngIf="event.error_code">{{event.error_code}}</p>
               </div>
             </div>
           </div> 

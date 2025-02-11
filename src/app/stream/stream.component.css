@@ -106,11 +106,24 @@
     margin-bottom: 5px;
 }
 
-.item div p:last-child {
+.valid {
     margin-top: 0;
     font-size: 0.9rem;
     color: gray;
     opacity: 0.7;
+}
+
+.error {
+    margin-top: 0;
+    font-size: 0.9rem;
+    color: red;
+    background-color: pink;
+    border-radius: 1.25rem;
+    padding-left: 10px;
+    width: 65%;
+    height: 25px;
+    display: flex;
+    align-items: center;
 }
 
 .footer {

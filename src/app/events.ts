@@ -1,6 +1,6 @@
 export interface Events {
     id_device: number,
     state: string,
-    errorCode: string | null,
+    error_code: string | null,
     id_user: number
 }

@@ -7,8 +7,8 @@
         </div>
         <mat-form-field class="input-size" appearance="outline">
             <mat-select formControlName="id_device">
-                @for (device of data.devices; track device) {
-                <mat-option [value]="device.id">{{ device.name }}</mat-option>
+                @for (device of socketService.devicesSignal(); track device) {
+                <mat-option [value]="socketService.devicesSignal().length - 1">{{ device.name }}</mat-option>
                 } @if (trackerForm.hasError('required')) {
                 <mat-error>Please choose a device</mat-error>
                 }

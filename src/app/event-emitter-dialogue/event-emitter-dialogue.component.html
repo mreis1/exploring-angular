@@ -1,9 +1,9 @@
-<form [formGroup]="eventForm">
+<form (submit)="addEvent()" [formGroup]="eventForm">
   <h2>Emit an event</h2>
   <h4>Device</h4>
   <mat-form-field appearance="outline" class="input-size">
     <mat-select formControlName="id_device">
-      @for (tracker of data.trackers; track tracker) {
+      @for (tracker of socketService.trackersSignal(); track tracker) {
       <mat-option [value]="tracker.id_device">{{ tracker.name }}</mat-option>
       } @if (eventForm.hasError('required')) {
       <mat-error>Please choose a device</mat-error>
@@ -18,7 +18,7 @@
     </mat-radio-group>
     @if (eventForm.controls.state.value === "Error") {
         <mat-form-field appearance="outline">
-            <mat-select value="Invalid" formControlName="errorCode">
+            <mat-select value="Invalid" formControlName="error_code">
                 <mat-option value="Invalid">Invalid</mat-option>
                 <mat-option value="Unauthorized">Unauthorized</mat-option>
                 <mat-option value="No subscription">No subscription</mat-option>

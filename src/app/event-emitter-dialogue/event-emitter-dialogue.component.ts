@@ -19,7 +19,6 @@ import { Users } from '../users';
 export class EventEmitterDialogueComponent {
   dialogueRef = inject(MatDialogRef<EventEmitterDialogueComponent>)
   socketService = inject(SocketService);
-  data = inject(MAT_DIALOG_DATA);
   userService = inject(UserService);
 
   users = this.userService.usersSignal;
@@ -28,7 +27,7 @@ export class EventEmitterDialogueComponent {
   eventForm: FormGroup<{
     id_device: FormControl<number>;
     state: FormControl<string>;
-    errorCode: FormControl<string | null>;
+    error_code: FormControl<string | null>;
     id_user: FormControl<number>;
   }> = new FormGroup({
     id_device: new FormControl(0, {
@@ -39,7 +38,7 @@ export class EventEmitterDialogueComponent {
       nonNullable: true,
       validators: [Validators.required]
     }),
-    errorCode: new FormControl('', {
+    error_code: new FormControl('', {
       nonNullable: false,
     }),
     id_user: new FormControl(0, {
@@ -47,7 +46,7 @@ export class EventEmitterDialogueComponent {
     })
   })
 
-  addEvent(): void {
+  addEvent(): void {  
     if (this.eventForm.valid) {
       const event = this.eventForm.getRawValue();
       this.socketService.createEvent(event, (response) => {
