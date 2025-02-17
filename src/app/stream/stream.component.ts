@@ -10,7 +10,7 @@ import { EventEmitterDialogueComponent } from '../event-emitter-dialogue/event-e
 import { TrackerDialogueComponent } from '../tracker-dialogue/tracker-dialogue.component';
 import { SocketService } from '../../services/socket.service';
 import { UserService } from '../../services/users.service';
-import { Users } from '../users';
+import { User } from '../user';
 import { Devices } from '../devices';
 import { Events } from '../events';
 
@@ -26,14 +26,14 @@ export class StreamComponent implements OnInit {
   dialog = inject(MatDialog);
   socketService = inject(SocketService);
    userService = inject(UserService);
-  
+
   users = this.userService.usersSignal;
   cols: number = this.socketService.trackersSignal().length || 0;
 
-  userMap: Signal<Map<number,Users>> = computed(() => {
+  userMap: Signal<Map<number,User>> = computed(() => {
     return new Map(this.users()?.map(user => [user.id, user]) || []);
   })
-  
+
   ngOnInit(): void {
     this.socketService.getDevices();
     this.socketService.getEvents();
@@ -43,7 +43,7 @@ export class StreamComponent implements OnInit {
   getUser(userId: number) {
     return this.userMap()?.get(userId);
   }
- 
+
   openEventDialogue() : void {
     this.dialog.open(EventEmitterDialogueComponent, {
       width: '500px',

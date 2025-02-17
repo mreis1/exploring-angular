@@ -10,13 +10,13 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { HttpClient } from '@angular/common/http';
-import { Users } from '../users';
+import { User } from '../user';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-auth',
   imports: [MatGridListModule, MatRadioModule, MatFormFieldModule,
-    MatInputModule, MatDatepickerModule, MatNativeDateModule, 
+    MatInputModule, MatDatepickerModule, MatNativeDateModule,
     MatButtonModule, CommonModule, ReactiveFormsModule
   ],
   templateUrl: './auth.component.html',
@@ -78,7 +78,7 @@ export class AuthComponent {
   onLogin(): void {
     this.http.get<{csrfToken: string}>('/api/csrf-token', { withCredentials: true })
       .subscribe(csrfResponse => {
-        this.http.post<{message: string, user: Users}>(
+        this.http.post<{message: string, user: User}>(
           '/api/login',
           { user: this.loginForm.getRawValue() },
           { headers: {'X-CSRF-Token': csrfResponse.csrfToken}, withCredentials: true }
@@ -98,8 +98,8 @@ export class AuthComponent {
       this.userService.upload(file);
       const interval = setInterval(() => {
         console.log("Checking filename signal:", this.userService.filename());
-        if (this.userService.filename()) { 
-          clearInterval(interval); 
+        if (this.userService.filename()) {
+          clearInterval(interval);
           formValue.image = this.userService.filename();
           this.userService.register(formValue);
           this.userService.filename.set(null);
@@ -107,7 +107,7 @@ export class AuthComponent {
       }, 100);
     } else {
       this.userService.register(formValue);
-    } 
+    }
   }
 }
 

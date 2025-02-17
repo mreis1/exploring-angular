@@ -1,4 +1,4 @@
-import { Component, inject, Signal, computed } from '@angular/core';
+import {Component, inject, Signal, computed, OnInit} from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
@@ -8,7 +8,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { SocketService } from '../../services/socket.service';
 import { UserService } from '../../services/users.service';
-import { Users } from '../users';
+import { User } from '../user';
 
 @Component({
   selector: 'app-event-emitter-dialogue',
@@ -16,7 +16,7 @@ import { Users } from '../users';
   templateUrl: './event-emitter-dialogue.component.html',
   styleUrl: './event-emitter-dialogue.component.css'
 })
-export class EventEmitterDialogueComponent {
+export class EventEmitterDialogueComponent implements OnInit {
   dialogueRef = inject(MatDialogRef<EventEmitterDialogueComponent>)
   socketService = inject(SocketService);
   userService = inject(UserService);
@@ -24,13 +24,13 @@ export class EventEmitterDialogueComponent {
   users = this.userService.usersSignal;
   message = '';
 
-  eventForm: FormGroup<{
+  form: FormGroup<{
     id_device: FormControl<number>;
     state: FormControl<string>;
     error_code: FormControl<string | null>;
-    id_user: FormControl<number>;
+    user: FormControl<User>;
   }> = new FormGroup({
-    id_device: new FormControl(0, {
+    id_device: new FormControl(null as any, {
       nonNullable: true,
       validators: [Validators.required]
     }),
@@ -41,18 +41,22 @@ export class EventEmitterDialogueComponent {
     error_code: new FormControl('', {
       nonNullable: false,
     }),
-    id_user: new FormControl(0, {
+    user: new FormControl(null as any, {
       nonNullable: true,
     })
   })
 
-  addEvent(): void {  
-    if (this.eventForm.valid) {
-      const event = this.eventForm.getRawValue();
-      this.socketService.createEvent(event, (response) => {
+  addEvent(): void {
+    if (this.form.valid) {
+      console.log('addEvent...');
+      const {user,...event} = this.form.getRawValue();
+      this.socketService.createEvent({
+        ...event,
+        id_user: user?.id
+      }, (response) => {
         if (response.success) {
           this.message = 'Event added';
-          this.eventForm.reset();
+          this.form.reset();
           this.closeDialogue();
         } else {
           this.message = 'Error adding event' + response.message;
@@ -64,5 +68,12 @@ export class EventEmitterDialogueComponent {
   closeDialogue(): void {
     this.dialogueRef.close();
   }
-
+  ngOnInit() {
+    console.log(this.users());
+    this.form.patchValue({user: this.users()[0] });
+  }
+  userDisplayFn(user: User) {
+    console.log(user);
+    return user?.name ?? ''
+  }
 }

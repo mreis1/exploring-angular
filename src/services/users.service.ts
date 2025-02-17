@@ -1,5 +1,5 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
-import { Users } from '../app/users';
+import { User } from '../app/user';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { HttpClient } from '@angular/common/http';
@@ -14,12 +14,12 @@ export class UserService {
   //private socket: Socket;
   http = inject(HttpClient);
   router = inject(Router);
-  
+
   //users = new BehaviorSubject<Users[]>([]);
   //users$ = this.users.asObservable();
-  usersSignal = signal<Users[]>([]);
+  usersSignal = signal<User[]>([]);
 
-  currentUserSignal = signal<Users | undefined | null>(undefined);
+  currentUserSignal = signal<User | undefined | null>(undefined);
   isLogged = computed(() => this.currentUserSignal());
 
   filename = signal<string | undefined | null>(null);
@@ -28,7 +28,7 @@ export class UserService {
   femaleUsers = computed(() => this.usersSignal().filter(user => user.gender.toLowerCase() === 'female'));
 
   constructor(private snackBar: MatSnackBar) {
-  
+
     effect(() => {
       console.log(this.usersSignal());
       console.log(this.filename());
@@ -39,7 +39,7 @@ export class UserService {
     this.http.get('/api/check', { withCredentials: true }).subscribe(
       (response: any) => {
         this.currentUserSignal.set(response.user);
-      },  
+      },
     )
   }
 
@@ -47,17 +47,17 @@ export class UserService {
     const formData = new FormData();
     formData.append("file", file);
     this.http.post<{ filename: string }>(
-      '/api/upload', 
+      '/api/upload',
       formData
     ).subscribe((response) => {
-      console.log("Upload response:", response); 
+      console.log("Upload response:", response);
       this.filename.set(response.filename);
       console.log("Filename signal updated to:", this.filename());
     });
   }
 
   register(formValue: any): void {
-    this.http.post<{message: string, user: Users}>(
+    this.http.post<{message: string, user: User}>(
       '/api/register',
       {
         user: formValue,
@@ -70,7 +70,7 @@ export class UserService {
   }
 
   getUsers(): void {
-    this.http.get<Users[]>('/api/users').subscribe((users) => this.usersSignal.set(users));
+    this.http.get<User[]>('/api/users').subscribe((users) => this.usersSignal.set(users));
   }
 
   //addUser(data: {gender: string, name: string, birthDate: string}): Observable<Users> {
@@ -81,7 +81,7 @@ export class UserService {
   //    id: Math.random().toString(16)
   //  }
   //  const currentUsers = this.users.getValue();
-  //  const updatedUsers = [...currentUsers, newUser]; 
+  //  const updatedUsers = [...currentUsers, newUser];
   //  this.users.next(updatedUsers);
 //
   //  return new Observable((observer) => {
@@ -135,7 +135,7 @@ export class UserService {
   //}
 
   addUser(data: {email: string, password: string, gender: string, name: string, birthDate: string, image: string}): void {
-    const newUser: Users = {
+    const newUser: User = {
       id: Math.random(),
       email: data.email,
       password: data.password,
@@ -149,7 +149,7 @@ export class UserService {
   }
 
   removeUser(id: number): void {
-    let removedUser: Users | null = null;
+    let removedUser: User | null = null;
     this.usersSignal.update(currentUsers => {
       const userToRemove = currentUsers.find(user => user.id === id);
       if (!userToRemove) {
@@ -166,11 +166,11 @@ export class UserService {
     }
   }
 
-  filterMenUsers(): Users[] {
+  filterMenUsers(): User[] {
     return this.maleUsers();
   }
 
-  filterWomenUsers(): Users[] {
+  filterWomenUsers(): User[] {
     return this.femaleUsers();
   }
 
