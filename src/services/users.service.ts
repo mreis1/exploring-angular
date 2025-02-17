@@ -5,6 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar'
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { io, Socket } from 'socket.io-client';
+import { response } from 'express';
 
 @Injectable({
   providedIn: 'root'
@@ -27,17 +28,19 @@ export class UserService {
   femaleUsers = computed(() => this.usersSignal().filter(user => user.gender.toLowerCase() === 'female'));
 
   constructor(private snackBar: MatSnackBar) {
-  //  this.socket = io('http://localhost:4200/');
-//
-  //  this.socket.on("user-created", (newUser) => {
-  //    console.log("New user", newUser);
-  //    this.usersSignal.update((users) => [...users, newUser]);
-  //  })
-
+  
     effect(() => {
       console.log(this.usersSignal());
       console.log(this.filename());
     })
+  }
+
+  getCurrentUser(): void {
+    this.http.get('/api/check', { withCredentials: true }).subscribe(
+      (response: any) => {
+        this.currentUserSignal.set(response.user);
+      },  
+    )
   }
 
   upload(file: File): void {

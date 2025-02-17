@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { Router, RouterLink } from '@angular/router';
 import { UserService } from '../../services/users.service';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
 
 @Component({
@@ -15,6 +16,7 @@ import { CommonModule } from '@angular/common';
 export class HeaderComponent {
   userService = inject(UserService);
   router = inject(Router);
+  http = inject(HttpClient);
 
   activeLink: string = 'home';
 
@@ -23,10 +25,11 @@ export class HeaderComponent {
   }
 
   onLogout(): void {
-    this.userService.currentUserSignal.set(null);
-    this.router.navigateByUrl('/', { skipLocationChange: true}).then(() => {
-      this.router.navigate([this.router.url]);
-    })
+    this.http.post('/api/logout', {}, { withCredentials: true }).subscribe(() => {
+      this.userService.currentUserSignal.set(null);
+      this.router.navigateByUrl('/', { skipLocationChange: true}).then(() => {
+        this.router.navigate([this.router.url]);
+      })
+    }); 
   }
-
 }

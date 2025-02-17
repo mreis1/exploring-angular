@@ -76,16 +76,18 @@ export class AuthComponent {
   });
 
   onLogin(): void {
-    this.http.post<{message: string, user: Users}>(
-      '/api/login',
-      {
-        user: this.loginForm.getRawValue(),
-      }
-    ).subscribe((response) => {
-      console.log(response);
-      this.userService.currentUserSignal.set(response.user);
-      this.router.navigateByUrl('/home');
-    })
+    this.http.get<{csrfToken: string}>('/api/csrf-token', { withCredentials: true })
+      .subscribe(csrfResponse => {
+        this.http.post<{message: string, user: Users}>(
+          '/api/login',
+          { user: this.loginForm.getRawValue() },
+          { headers: {'X-CSRF-Token': csrfResponse.csrfToken}, withCredentials: true }
+        ).subscribe(response => {
+          console.log(response);
+          this.userService.currentUserSignal.set(response.user);
+          this.router.navigateByUrl('/home');
+        })
+      })
   }
 
   onRegister() : void {
@@ -107,7 +109,6 @@ export class AuthComponent {
       this.userService.register(formValue);
     } 
   }
-
 }
 
 

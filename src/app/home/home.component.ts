@@ -25,7 +25,8 @@ export class HomeComponent implements OnInit {
   router = inject(Router);
 
   ngOnInit(): void {
-      this.userService.getUsers();
+    this.userService.getCurrentUser();
+    this.userService.getUsers();
   }
 
 }

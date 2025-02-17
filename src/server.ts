@@ -13,14 +13,42 @@ import { db } from './db';
 import multer from 'multer';
 import * as IO from 'socket.io';
 import * as Http from 'node:http';
+import session from 'express-session';
+import cookieParser from 'cookie-parser';
+import csrf from 'csurf';
+import jwt from 'jsonwebtoken';
+import dotenv from'dotenv';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const envPath = resolve(__dirname, '../../.env');
+dotenv.config({ path: envPath });
+
+
+
+console.log("🔹 Loaded Database Config:");
+console.log("DB_USER:", process.env["DB_USER"]);
+console.log("DB_PASSWORD:", process.env["DB_PASSWORD"] ? "******" : "NOT SET");
+console.log("DB_NAME:", process.env["DB_DATABASE"]);
+console.log("DB_HOST:", process.env["DB_HOST"]);
+console.log("DB_PORT:", process.env["DB_PORT"]);
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 const angularApp = new AngularNodeAppEngine();
 const app = express();
-app.use(express.json());
-
 const server = new Http.Server(app);
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(session({
+  secret: process.env["SESSION_SECRET"] || "supersecret",
+  resave: true,
+  saveUninitialized: true,
+  cookie: { secure: false, httpOnly: true, sameSite: "lax" }
+}));
+
+const protection = csrf({ cookie: true });
 
 const uploadDir: string = "../public/upload";
 
@@ -45,7 +73,7 @@ app.post('/api/upload', upload.single("file"), function (req, res) {
   return res.status(200).json({ filename: file?.filename});
 })
 
-const login = async (req: Request, res: Response, next: NextFunction) => {
+const login = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body.user;
     if (!email || !password) {
@@ -53,18 +81,51 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     }
     const query = 'SELECT * FROM rxjs.users WHERE email = ?';
     const [results]: any = await db.execute(query, [email]);
-    if (!results.length) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
     const user = results[0];
-    if (user.password !== password) {
+    if (!results.length || user.password !== password) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
-    return res.status(200).json({ message: 'Login successful', user });
+    console.log("User authenticated:", user);
+    req.session.user = user;
+    console.log("Session after login:", req.session);
+    const token = jwt.sign({ id: user.id }, process.env["JWT_SECRET"] || 'secret', { expiresIn: '1h'});
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+    })
+    res.status(200).json({ message: 'Login successful', user });
   } catch (error) {
     return next(error);
   }
 };
+
+app.use(protection);
+app.get("/api/csrf-token", (req: any, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
+
+const checkLogin = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({ message: "Not authenticated"});
+    }
+    return res.json({ user: req.session.user });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+const logout = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    res.clearCookie("auth_token");
+    req.session.destroy(() => {
+      res.status(200).json({ message: "Logged successful" });
+    })
+  } catch (error) {
+    next(error);
+  }
+}
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -98,71 +159,17 @@ const getUsers = async (req: Request, res: Response, next: NextFunction) => {
     next(error);
   }
 }
-//
-//const addDevices = async (req: Request, res: Response, next: NextFunction) => {
-//  try {
-//    const { name, stationName } = req.body;
-//    const query = 'INSERT INTO rxjs.device (name, stationName) VALUES (?, ?)';
-//    const [result]: any = await db.execute(query, [name, stationName]);
-//    const newDevice = { id: result.insertId, name, stationName };
-//    io.emit("device-created", newDevice);
-//    return res.status(200).json({ message: "Device created successfully", newDevice});
-//  } catch (error) {
-//    return next(error);
-//  }
-//}
-//
-//const addEvents = async (req: Request, res: Response, next: NextFunction) => {
-//  try {
-//    const { id_tracker, state, errorCode, id_user } = req.body;
-//    const query = 'INSERT INTO rxjs.event (id_tracker, state, errorCode, id_user) VALUES (?, ?, ?, ?)';
-//    const [result]: any = await db.execute(query, [id_tracker, state, errorCode, id_user]);
-//    const newEvent = { id: result.insertId, id_tracker, state, errorCode, id_user };
-//    io.emit("event-created", newEvent);
-//    return res.status(200).json({ message: "Event created successfully", newEvent});
-//  } catch (error) {
-//    return next(error);
-//  }
-//}
-//
-//const addTracker = async (req: Request, res: Response, next: NextFunction) => {
-//  try {
-//    const { id_device } = req.body;
-//    const query = 'INSERT INTO rxjs.tracker (id_device) VALUES (?)';
-//    const [result]: any = await db.execute(query, [id_device]);
-//    const newTracker = { id: result.insertId, id_device };
-//    io.emit("tracker-created", newTracker);
-//    return res.status(200).json({ message: "Tracker created successfully", newTracker});
-//  } catch (error) {
-//    return next(error)
-//  }
-//}
+
 
 const router = express.Router();
 router.post('/login', login);
+router.post('/logout', logout);
 router.post('/register', register);
+router.get('/check', checkLogin);
 router.get('/users', getUsers);
-//router.post('/devices', addDevices);
-//router.post('/events', addEvents);
-//router.post('/tracker', addTracker);
 
 app.use('/api', router);
 
-/**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/**', (req, res) => {
- *   // Handle API request
- * });
- * ```
- */
-
-/**
- * Serve static files from /browser
- */
 app.use(
   express.static(browserDistFolder, {
     maxAge: '1y',
@@ -171,9 +178,6 @@ app.use(
   })
 );
 
-/**
- * Handle all other requests by rendering the Angular application.
- */
 app.use('/**', (req, res, next) => {
   angularApp
     .handle(req)
@@ -183,15 +187,14 @@ app.use('/**', (req, res, next) => {
     .catch(next);
 });
 
-/**
- * Start the server if this module is the main entry point.
- * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
- */
 if (isMainModule(import.meta.url)) {
   const port = process.env['PORT'] || 4000;
 
   const io = new IO.Server(server, {
-    transports: ['websocket']
+    transports: ['websocket'],
+    cors: {
+      credentials: true
+    }
   });
   
   io.on("connection", (socket) => {
@@ -300,7 +303,4 @@ if (isMainModule(import.meta.url)) {
   });
 }
 
-/**
- * The request handler used by the Angular CLI (dev-server and during build).
- */
 export const reqHandler = createNodeRequestHandler(app);
