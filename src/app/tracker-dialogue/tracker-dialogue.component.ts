@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { SocketService } from '../../services/socket.service';
 import { FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -6,6 +6,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
+import {response} from 'express';
 
 @Component({
   selector: 'app-tracker-dialogue',
@@ -13,7 +14,7 @@ import { MatIcon, MatIconModule } from '@angular/material/icon';
   templateUrl: './tracker-dialogue.component.html',
   styleUrl: './tracker-dialogue.component.css'
 })
-export class TrackerDialogueComponent {
+export class TrackerDialogueComponent implements OnInit {
   dialogueRef = inject(MatDialogRef<TrackerDialogueComponent>);
   socketService = inject(SocketService);
 
@@ -76,8 +77,13 @@ export class TrackerDialogueComponent {
   toggleForm(): void {
     this.visibleForm = !this.visibleForm;
   }
-  
+
   closeDialogue(): void {
     this.dialogueRef.close();
+  }
+
+  ngOnInit(): void {
+    let devices = this.socketService.devicesSignal()
+    this.trackerForm.patchValue({id_device: devices[0]?.id ?? null })
   }
 }

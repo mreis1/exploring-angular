@@ -1,7 +1,7 @@
 import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { isPlatformBrowser } from '@angular/common';
-import { Devices } from '../app/devices';
+import {CreateReq, Devices} from '../app/devices';
 import { Events } from '../app/events';
 
 @Injectable({
@@ -78,7 +78,7 @@ export class SocketService {
         })
     }
 
-    createDevice(device: Devices, callback: (data: any) => void): void {
+    createDevice(device: CreateReq, callback: (data: any) => void): void {
         this.socket?.emit("create-device", device, callback);
     }
 

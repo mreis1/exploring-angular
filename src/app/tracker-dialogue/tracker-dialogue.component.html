@@ -8,20 +8,20 @@
         <mat-form-field class="input-size" appearance="outline">
             <mat-select formControlName="id_device">
                 @for (device of socketService.devicesSignal(); track device) {
-                <mat-option [value]="socketService.devicesSignal().length - 1">{{ device.name }}</mat-option>
+                <mat-option [value]="device.id">{{ device.name }}</mat-option>
                 } @if (trackerForm.hasError('required')) {
                 <mat-error>Please choose a device</mat-error>
                 }
               </mat-select>
         </mat-form-field>
-            <button class="submit-button" type="submit" [disabled]="trackerForm.invalid" mat-raised-button>Save</button>   
-        
-    </form>    
+            <button class="submit-button" type="submit" [disabled]="trackerForm.invalid" mat-raised-button>Save</button>
+
+    </form>
 } @else {
     <form (submit)="addDevice()" [formGroup]="deviceForm">
         <div class="toggle-button-div back">
             <button (click)="toggleForm()" mat-icon-button>
-                <mat-icon>arrow_back</mat-icon>   
+                <mat-icon>arrow_back</mat-icon>
             </button>
             <h2>New Device</h2>
         </div>
@@ -33,8 +33,8 @@
         <mat-form-field class="input-size" appearance="outline">
             <input type="text" matInput formControlName="stationName"/>
         </mat-form-field>
-            <button class="submit-button" type="submit" [disabled]="deviceForm.invalid" mat-raised-button>Save</button>  
-       
+            <button class="submit-button" type="submit" [disabled]="deviceForm.invalid" mat-raised-button>Save</button>
+
     </form>
 }
 

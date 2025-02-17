@@ -257,6 +257,7 @@ if (isMainModule(import.meta.url)) {
     socket.on("create-tracker", async (trackerData, callback) => {
       try {
         const { id_device } = trackerData;
+        console.log('id_device', id_device)
         const query = "INSERT INTO rxjs.tracker (id_device) VALUES (?)";
         const [result]: any = await db.execute(query, [id_device]);
         const querySelect = "SELECT rxjs.tracker.id, rxjs.tracker.id_device, rxjs.device.name, rxjs.device.stationName FROM rxjs.tracker INNER JOIN rxjs.device ON rxjs.tracker.id_device = rxjs.device.id WHERE rxjs.tracker.id = ?"
