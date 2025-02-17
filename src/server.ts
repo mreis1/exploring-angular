@@ -8,7 +8,6 @@ import express, { NextFunction, Request, Response
  } from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-
 import { db } from './db';
 import multer from 'multer';
 import * as IO from 'socket.io';
@@ -17,14 +16,8 @@ import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import csrf from 'csurf';
 import jwt from 'jsonwebtoken';
-import dotenv from'dotenv';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const envPath = resolve(__dirname, '../../.env');
-dotenv.config({ path: envPath });
 
-
-
+console.log('---------#2')
 console.log("🔹 Loaded Database Config:");
 console.log("DB_USER:", process.env["DB_USER"]);
 console.log("DB_PASSWORD:", process.env["DB_PASSWORD"] ? "******" : "NOT SET");
@@ -196,10 +189,10 @@ if (isMainModule(import.meta.url)) {
       credentials: true
     }
   });
-  
+
   io.on("connection", (socket) => {
     console.log("connected", socket.id);
-  
+
     socket.on("get-devices", async (_, callback) => {
       try {
         const query = "SELECT * FROM rxjs.device";
@@ -209,7 +202,7 @@ if (isMainModule(import.meta.url)) {
         callback({ success: false, message: "Error getting devices", error});
       }
     })
-  
+
     socket.on("get-events", async (_, callback) => {
       try {
         const query = "SELECT * FROM rxjs.event";
@@ -233,7 +226,7 @@ if (isMainModule(import.meta.url)) {
         callback({ success: false, message: "Error getting trackers", error})
       }
     })
-  
+
     socket.on("create-device", async (deviceData, callback) => {
       try {
         const { name, stationName } = deviceData;
@@ -246,7 +239,7 @@ if (isMainModule(import.meta.url)) {
         callback({ success: false, message: "Error creating device", error});
       }
     })
-  
+
     socket.on("create-event", async (eventData, callback) => {
       try {
         let { id_device, state, error_code, id_user } = eventData;
@@ -254,13 +247,13 @@ if (isMainModule(import.meta.url)) {
         const query = "INSERT INTO rxjs.event (id_device, state, error_code, id_user) VALUES (?, ?, ?, ?)";
         const [result]: any = await db.execute(query, [id_device, state, error_code, id_user]);
         const newEvent = { id: result.insertId, id_device, state, error_code, id_user };
-        io.emit("event-created", newEvent); 
+        io.emit("event-created", newEvent);
         callback({ success: true, event: newEvent});
       } catch (error) {
         callback({ success: false, message: "Error creating event", error});
       }
     })
-  
+
     socket.on("create-tracker", async (trackerData, callback) => {
       try {
         const { id_device } = trackerData;
@@ -274,7 +267,7 @@ if (isMainModule(import.meta.url)) {
         callback({ success: false, message: "Error creating tracker", error});
       }
     })
-  
+
     socket.on("disconnect", () => {
       console.log("disconnected", socket.id);
     })

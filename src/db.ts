@@ -1,18 +1,13 @@
+import './server-only/env-conf'
 import mysql, { ConnectionOptions } from "mysql2/promise";
 console.log("✅ Loading .env file...");
-import dotenv from 'dotenv'
-import { fileURLToPath } from 'node:url';
-import { resolve, dirname } from "node:path";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const envPath = resolve(__dirname, '../../../.env');
-console.log(envPath)
-dotenv.config({ path: envPath });
-console.log("✅ .env file loaded.");
+// import dotenv from 'dotenv'
+// import { fileURLToPath } from 'node:url';
+// import { resolve, dirname } from "node:path";
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = dirname(__filename);
 
-console.log("🔹 Database Configuration:");
-console.log("DB_HOST:", process.env["DB_HOST"] || "NOT SET");
-console.log("DB_USER:", process.env["DB_USER"] || "NOT SET");
+
 
 const access: ConnectionOptions = {
     host: process.env["DB_HOST"],
