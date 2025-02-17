@@ -1,11 +1,12 @@
 import mysql, { ConnectionOptions } from "mysql2/promise";
 console.log("✅ Loading .env file...");
-import dotenv from 'dotenv' 
+import dotenv from 'dotenv'
 import { fileURLToPath } from 'node:url';
 import { resolve, dirname } from "node:path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const envPath = resolve(__dirname, '../../.env'); 
+const envPath = resolve(__dirname, '../../../.env');
+console.log(envPath)
 dotenv.config({ path: envPath });
 console.log("✅ .env file loaded.");
 
