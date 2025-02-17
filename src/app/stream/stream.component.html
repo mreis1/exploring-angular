@@ -13,15 +13,15 @@
         </div>
       </div>
       <mat-card appearance="outlined" class="card">
-        <mat-card-content>
+        <mat-card-content style="flex: 1;">
           <div *ngFor="let event of socketService.eventsSignal()">
             <div class="time">
               <span>10h31</span>
               <span>à l'instant</span>
             </div>
             <div class="item">
-              <img *ngIf="getUser(event.id_user)?.image" [src]="getUser(event.id_user)?.image" mat-card-avatar class="avatar" />
-              <img *ngIf="!getUser(event.id_user)?.image" src="https://material.angular.io/assets/img/examples/shiba2.jpg" mat-card-avatar class="avatar" />
+              @let imageUrl = getUser(event.id_user)?.image ?? 'https://material.angular.io/assets/img/examples/shiba2.jpg';
+              <img [src]="imageUrl" alt="" mat-card-avatar class="avatar" />
               <div>
                 <p>{{ getUser(event.id_user)?.name }}</p>
                 <p class="valid" *ngIf="!event.error_code">{{ event.state }}</p>
