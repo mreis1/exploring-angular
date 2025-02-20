@@ -84,30 +84,29 @@ export class AuthComponent {
       ).subscribe(response => {
         console.log(response);
         this.userService.currentUserSignal.set(response.user);
-        setTimeout(() => {
+        // setTimeout(() => {
           this.router.navigateByUrl('/home');
-        }, 100)  
-      }) 
+        // }, 100)
+      })
     } catch (error) {
       this.userService.showMessage();
       console.error(error);
     }
-    
+
   }
 
   onRegister() : void {
     const formValue = this.registerForm.getRawValue();
     formValue.birthDate = new Date(formValue.birthDate).toISOString().slice(0,10);
-    const file: File | null = this.registerForm.get('image')?.value ?? null;
+    const file: File | null = formValue.image ?? null;
     if (file instanceof File) {
       this.userService.upload(file).subscribe((filename) => {
         console.log("Upload completed, received filename:", filename);
-        this.registerForm.get('image')?.setValue(filename);
+        // this.registerForm.get('image')?.setValue(filename);
         formValue.image = filename;
         this.userService.register(formValue);
         this.userService.filename.set(null);
       })
-      
     } else {
       this.userService.register(formValue);
     }
@@ -115,6 +114,7 @@ export class AuthComponent {
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
+    console.log(input!.files?.[0]); // files from html input
     if (input.files?.length) {
       this.registerForm.get('image')?.setValue(input.files[0]);
     } else {

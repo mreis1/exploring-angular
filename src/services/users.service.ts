@@ -21,7 +21,6 @@ export class UserService {
   usersSignal = signal<User[]>([]);
 
   currentUserSignal = signal<User | undefined | null>(undefined);
-  isLogged = computed(() => this.currentUserSignal());
 
   filename = signal<string | undefined | null>(null);
 
@@ -35,7 +34,7 @@ export class UserService {
   constructor(private snackBar: MatSnackBar) {
     effect(() => {
       console.log(this.usersSignal());
-      console.log(this.filename());
+      // console.log(this.filename());
     });
   }
 
@@ -62,7 +61,7 @@ export class UserService {
       .post<{ filename: string }>('/api/upload', formData).pipe(
         tap((response) => {
           console.log('Upload response:', response);
-          this.filename.set(response.filename);
+          // this.filename.set(response.filename);
         }),
         map((response) => response.filename),
         catchError((error) => {
@@ -91,13 +90,13 @@ export class UserService {
             this.currentUserSignal.set(response.user);
             setTimeout(() => {
               this.router.navigateByUrl('/home');
-            }, 100);  
+            }, 100);
           });
       });
     } catch (error) {
       this.showMessage();
       console.error(error);
-    }  
+    }
   }
 
   getUsers(): void {

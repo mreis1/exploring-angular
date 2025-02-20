@@ -63,12 +63,12 @@ export class TrackerDialogueComponent implements OnInit {
     if (this.deviceForm.valid) {
       const device = this.deviceForm.getRawValue();
       this.socketService.createDevice(device, (response) => {
-        if (response.success) {
+        if (response?.id) {
           this.message = 'Device added';
+          this.visibleForm = true;
           this.deviceForm.reset();
-          this.closeDialogue();
         } else {
-          this.message = 'Error adding tracker' + response.message;
+          this.message = 'Error adding tracker';
         }
       })
     }

@@ -14,7 +14,7 @@
             <span>{{ activity }}</span>
           } @else {
             <span>No activity</span>
-          }  
+          }
         </div>
       </div>
       <mat-card appearance="outlined" class="card">
@@ -46,7 +46,7 @@
           <button (click)="removeTracker(tracker.id)" mat-fab matTooltip="Delete the tracker" matTooltipPosition="above">
             <mat-icon>delete</mat-icon>
           </button>
-          <button (click)="openEventDialogue()" mat-fab>
+          <button (click)="openEventDialogue(tracker)" mat-fab>
             <mat-icon>add</mat-icon>
           </button>
         </mat-card-footer>

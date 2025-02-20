@@ -18,6 +18,7 @@ import { User } from '../user';
 })
 export class EventEmitterDialogueComponent implements OnInit {
   dialogueRef = inject(MatDialogRef<EventEmitterDialogueComponent>)
+  dialogData = inject(MAT_DIALOG_DATA) as {device_id?: number};
   socketService = inject(SocketService);
   userService = inject(UserService);
 
@@ -30,7 +31,7 @@ export class EventEmitterDialogueComponent implements OnInit {
     error_code: FormControl<string | null>;
     user: FormControl<User>;
   }> = new FormGroup({
-    id_device: new FormControl(null as any, {
+    id_device: new FormControl(this.dialogData?.device_id! ?? null, {
       nonNullable: true,
       validators: [Validators.required]
     }),
@@ -69,6 +70,7 @@ export class EventEmitterDialogueComponent implements OnInit {
     this.dialogueRef.close();
   }
   ngOnInit() {
+    console.log('initial device_id', this.dialogData?.device_id)
     console.log(this.users());
     this.form.patchValue({user: this.users()[0] });
   }

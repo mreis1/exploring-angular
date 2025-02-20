@@ -1,7 +1,7 @@
 import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { isPlatformBrowser } from '@angular/common';
-import {CreateReq, Devices} from '../app/devices';
+import {CreateReq, Device} from '../app/device';
 import { Events, OmitedEvents } from '../app/events';
 import { OmitedTrackers, Trackers } from '../app/trackers';
 import { MatSnackBar } from '@angular/material/snack-bar'
@@ -15,7 +15,7 @@ export class SocketService {
     platformId = inject(PLATFORM_ID);
     snackBar = inject(MatSnackBar);
 
-    devicesSignal = signal<Devices[]>([]);
+    devicesSignal = signal<Device[]>([]);
     eventsSignal = signal<Events[]>([]);
     trackersSignal = signal<Trackers[]>([]);
 
@@ -88,8 +88,9 @@ export class SocketService {
         })
     }
 
-    createDevice(device: CreateReq, callback: (data: any) => void): void {
+    createDevice(device: CreateReq, callback: (data: Device) => void): void {
         this.socket?.emit("create-device", device, (data: any) => {
+              console.log('create device', data);
             if (data.success) {
                 callback(data.device);
             } else {

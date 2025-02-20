@@ -14,6 +14,7 @@ import { UserService } from '../../services/users.service';
 import { User } from '../user';
 import { DatePipe } from '@angular/common';
 import { TimeAgoPipe } from '../time-ago.pipe';
+import {Trackers} from '../trackers';
 
 @Component({
   selector: 'app-stream',
@@ -48,10 +49,13 @@ export class StreamComponent implements OnInit {
     return this.userMap()?.get(userId);
   }
 
-  openEventDialogue(): void {
+  openEventDialogue(track: Trackers): void {
     this.dialog.open(EventEmitterDialogueComponent, {
       width: '500px',
       height: '500px',
+      data: {
+          device_id: track?.id_device
+      }
     });
   }
 
@@ -64,5 +68,5 @@ export class StreamComponent implements OnInit {
 
   removeTracker(id: number): void {
     this.socketService.deleteTracker(id);
-  } 
+  }
 }

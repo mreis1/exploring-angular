@@ -3,6 +3,7 @@ import { HomeComponent } from './home/home.component';
 import { AuthComponent } from './auth/auth.component';
 import { StreamComponent } from './stream/stream.component';
 import { authGuard } from './auth.guard';
+import {loginGuard} from './login.guard';
 
 export const routes: Routes = [
     {
@@ -15,21 +16,22 @@ export const routes: Routes = [
         path: 'stream',
         component: StreamComponent,
         title: 'Stream',
-        canActivate: [authGuard]    
+        canActivate: [authGuard]
     },
     {
         path: 'auth',
         component: AuthComponent,
-        title: 'Auth',   
+        canActivate: [loginGuard],
+        title: 'Auth',
     },
     {
         path: '',
-        redirectTo: '/auth',
+        redirectTo: '/home',
         pathMatch: 'full'
     },
     {
         path: '**',
-        redirectTo: '/auth',
+        redirectTo: '/home',
         pathMatch: 'full'
     }
 ];
