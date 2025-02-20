@@ -8,22 +8,34 @@
           <span>{{ tracker.stationName }}</span>
         </div>
         <div>
-          <span>Activity over past </span>
-          <span>10 min</span>
+          @let activity = (tracker?.last_activity | date:'shortTime':userTimezone);
+          @if (tracker.last_activity) {
+            <span>Activity over past </span>
+            <span>{{ activity }}</span>
+          } @else {
+            <span>No activity</span>
+          }  
         </div>
       </div>
       <mat-card appearance="outlined" class="card">
         <mat-card-content style="flex: 1;">
-          <div *ngFor="let event of socketService.eventsSignal()">
+          <div style="margin-bottom: 10px;" *ngFor="let event of socketService.eventsSignal()">
             <div class="time">
-              <span>10h31</span>
-              <span>à l'instant</span>
+              @let time = (event?.created_at | date:'shortTime': userTimezone);
+              @let timeAgo = (event?.created_at | timeAgo);
+              @if (event.created_at) {
+                <span>{{ time }}</span>
+                <span>{{ timeAgo }}</span>
+              } @else {
+                <span>No time available</span>
+              }
             </div>
             <div class="item">
               @let imageUrl = getUser(event.id_user)?.image ?? 'https://material.angular.io/assets/img/examples/shiba2.jpg';
               <img [src]="imageUrl" alt="" mat-card-avatar class="avatar" />
               <div>
-                <p>{{ getUser(event.id_user)?.name }}</p>
+                @let name = getUser(event.id_user)?.name;
+                <p>{{ name }}</p>
                 <p class="valid" *ngIf="!event.error_code">{{ event.state }}</p>
                 <p class="error" *ngIf="event.error_code">{{event.error_code}}</p>
               </div>
@@ -31,6 +43,9 @@
           </div>
         </mat-card-content>
         <mat-card-footer class="footer">
+          <button (click)="removeTracker(tracker.id)" mat-fab matTooltip="Delete the tracker" matTooltipPosition="above">
+            <mat-icon>delete</mat-icon>
+          </button>
           <button (click)="openEventDialogue()" mat-fab>
             <mat-icon>add</mat-icon>
           </button>

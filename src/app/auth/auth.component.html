@@ -43,7 +43,7 @@
             </mat-form-field>
             <div style="display: block;">
                 <mat-label>Image</mat-label>
-                <input type="file" formControlName="image" />
+                <input type="file" (change)="onFileSelected($event)" formControlName="image" />
             </div>
             <button type="submit" [disabled]="registerForm.invalid" mat-raised-button style="display: block;">Registar</button>
         </form>

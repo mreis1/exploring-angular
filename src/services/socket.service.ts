@@ -2,7 +2,9 @@ import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { isPlatformBrowser } from '@angular/common';
 import {CreateReq, Devices} from '../app/devices';
-import { Events } from '../app/events';
+import { Events, OmitedEvents } from '../app/events';
+import { OmitedTrackers, Trackers } from '../app/trackers';
+import { MatSnackBar } from '@angular/material/snack-bar'
 
 @Injectable({
     providedIn: 'root',
@@ -11,10 +13,11 @@ import { Events } from '../app/events';
 export class SocketService {
     private socket?: Socket;
     platformId = inject(PLATFORM_ID);
+    snackBar = inject(MatSnackBar);
 
     devicesSignal = signal<Devices[]>([]);
     eventsSignal = signal<Events[]>([]);
-    trackersSignal = signal<any[]>([]);
+    trackersSignal = signal<Trackers[]>([]);
 
     constructor() {
         if (isPlatformBrowser(this.platformId)) {
@@ -23,6 +26,8 @@ export class SocketService {
                 path: undefined
             })
         }
+
+        console.log('Event',this.eventsSignal);
 
         this.socket?.on("connection", () => {
             console.log("Connected to the server", this.socket?.id);
@@ -45,6 +50,11 @@ export class SocketService {
         this.socket?.on("tracker-created", (tracker) => {
             console.log("Tracker created", tracker);
             this.trackersSignal.update(trackers => [...trackers, tracker]);
+        })
+
+        this.socket?.on("tracker-deleted", (id: number) => {
+            console.log("Tracker deleted", id);
+            this.trackersSignal.update(trackers => trackers.filter(tracker => tracker.id !== id));
         })
     }
 
@@ -79,15 +89,47 @@ export class SocketService {
     }
 
     createDevice(device: CreateReq, callback: (data: any) => void): void {
-        this.socket?.emit("create-device", device, callback);
+        this.socket?.emit("create-device", device, (data: any) => {
+            if (data.success) {
+                callback(data.device);
+            } else {
+                this.showMessage();
+                console.error("Error creating device", data.message);
+            }
+        });
     }
 
-    createEvent(event: Events, callback: (data: any) => void): void {
-        this.socket?.emit("create-event", event, callback);
+    createEvent(event: OmitedEvents, callback: (data: any) => void): void {
+        this.socket?.emit("create-event", event, (data: any) => {
+            if (data.success) {
+                callback(data.event);
+            } else {
+                this.showMessage();
+                console.error("Error creating event", data.message);
+            }
+        });
     }
 
-    createTracker(tracker: { id_device: number }, callback: (data: any) => void): void {
-        this.socket?.emit("create-tracker", tracker, callback);
+    createTracker(tracker: OmitedTrackers, callback: (data: any) => void): void {
+        this.socket?.emit("create-tracker", tracker, (data: any) => {
+            if (data.success) {
+                callback(data.tracker);
+            } else {
+                this.showMessage();
+                console.error("Error creating tracker", data.message);
+            }
+        });
+    }
+
+    deleteTracker(id: number): void {
+        this.socket?.emit("delete-tracker", {id}, (data: any) => {
+            if (data.success) {
+                this.trackersSignal.update(trackers => trackers.filter(tracker => tracker.id !== id));
+            } else {
+                this.showMessage();
+                console.error("Error deleting tracker", data.message);
+            }
+        });
     }
 
     onDeviceCreated() {
@@ -101,4 +143,12 @@ export class SocketService {
     onTrackerCreated() {
         this.socket?.on("tracker-created", (tracker) => console.log(tracker));
     }
+
+    onTrackerDeleted() {
+        this.socket?.on("tracker-deleted", (id) => console.log(id));
+    }
+
+    showMessage(): void {
+        this.snackBar.open("Something went wrong. Please check your connection and try again later."), { duration: 3000 };
+      }
 }

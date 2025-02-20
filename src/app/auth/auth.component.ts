@@ -76,37 +76,49 @@ export class AuthComponent {
   });
 
   onLogin(): void {
-    this.http.get<{csrfToken: string}>('/api/csrf-token', { withCredentials: true })
-      .subscribe(csrfResponse => {
-        this.http.post<{message: string, user: User}>(
-          '/api/login',
-          { user: this.loginForm.getRawValue() },
-          { headers: {'X-CSRF-Token': csrfResponse.csrfToken}, withCredentials: true }
-        ).subscribe(response => {
-          console.log(response);
-          this.userService.currentUserSignal.set(response.user);
+    try {
+       this.http.post<{message: string, user: User}>(
+        '/api/login',
+        { user: this.loginForm.getRawValue() },
+        { withCredentials: true }
+      ).subscribe(response => {
+        console.log(response);
+        this.userService.currentUserSignal.set(response.user);
+        setTimeout(() => {
           this.router.navigateByUrl('/home');
-        })
-      })
+        }, 100)  
+      }) 
+    } catch (error) {
+      this.userService.showMessage();
+      console.error(error);
+    }
+    
   }
 
   onRegister() : void {
     const formValue = this.registerForm.getRawValue();
     formValue.birthDate = new Date(formValue.birthDate).toISOString().slice(0,10);
-    const file = formValue.image.event?.target.files[0];
-    if (file) {
-      this.userService.upload(file);
-      const interval = setInterval(() => {
-        console.log("Checking filename signal:", this.userService.filename());
-        if (this.userService.filename()) {
-          clearInterval(interval);
-          formValue.image = this.userService.filename();
-          this.userService.register(formValue);
-          this.userService.filename.set(null);
-        }
-      }, 100);
+    const file: File | null = this.registerForm.get('image')?.value ?? null;
+    if (file instanceof File) {
+      this.userService.upload(file).subscribe((filename) => {
+        console.log("Upload completed, received filename:", filename);
+        this.registerForm.get('image')?.setValue(filename);
+        formValue.image = filename;
+        this.userService.register(formValue);
+        this.userService.filename.set(null);
+      })
+      
     } else {
       this.userService.register(formValue);
+    }
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) {
+      this.registerForm.get('image')?.setValue(input.files[0]);
+    } else {
+      this.registerForm.get('image')?.setValue(null);
     }
   }
 }

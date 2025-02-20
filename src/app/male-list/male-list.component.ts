@@ -34,7 +34,7 @@ export class MaleListComponent /*implements OnInit*/ {
   //  })
   //}
 
-  onRemoveUser(id: string): void {
+  onRemoveUser(id: number): void {
     this.userService.removeUser(id);
   }
 }

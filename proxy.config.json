@@ -4,5 +4,11 @@
         "ws": true,
         "secure": false,
         "logLevel": "debug"
+    },
+    "/api": {
+        "target": "http://localhost:4000",
+        "secure": false,
+        "changeOrigin": true,
+        "withCredentials": true
     }
 }

@@ -62,7 +62,7 @@
 .time {
     display: flex;
     justify-content: space-between;
-    width: 31%;
+    width: 45%;
     color: gray;
     font-size: 1.2rem;
     margin-bottom: 5px;
@@ -128,13 +128,20 @@
 
 .footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     margin-top: 15px;
 }
 
 .footer button {
-    background-color: white;
     border-radius: 50%;
+}
+
+.footer button:first-child {
+    background-color: pink;
+}
+
+.footer button:last-child {
+    background-color: white;
 }
 
 .tracker {

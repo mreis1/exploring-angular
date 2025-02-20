@@ -1,10 +1,12 @@
-<p>Last 5 females</p>
-<mat-list *ngFor="let user of femaleUsers()">
+<div style="display: flex; justify-content: start; align-items: center; flex-direction: column; ">
+ <p style="margin-top: 0;">Last 5 females</p>
+ @if (femaleUsers()) {
+  <mat-list *ngFor="let user of femaleUsers()">
   <mat-list-item style="background-color: lightgray; width: 100%">
     <div style="display: flex; justify-content: space-between">
-      <span style="display: flex; align-items: center">{{ user.name }}</span>
+      <span style="display: flex; align-items: center">{{ user.name }}</span>&nbsp;&nbsp;
       <span style="display: flex; align-items: center; cursor: pointer">
-        {{ user.birthDate | date:'shortDate' }}
+         {{ user.birthDate | date:'shortDate' }}
         <button (click)="onRemoveUser(user.id)" mat-icon-button>
           <mat-icon fontIcon="delete"></mat-icon>
         </button>
@@ -12,12 +14,16 @@
     </div>
   </mat-list-item>
 </mat-list>
+} @else {
+  <p style="margin-top: 0;">No female users</p>
+}
 
 <p>Last 5 males</p>
-<mat-list *ngFor="let user of maleUsers()">
+@if (maleUsers()) {
+ <mat-list *ngFor="let user of maleUsers()">
   <mat-list-item style="background-color: lightgray; width: 100%">
     <div style="display: flex; justify-content: space-between">
-      <span style="display: flex; align-items: center">{{ user.name }}</span>
+      <span style="display: flex; align-items: center">{{ user.name }}</span>&nbsp;&nbsp;
       <span style="display: flex; align-items: center; cursor: pointer">
         {{ user.birthDate | date:'shortDate' }}
         <button (click)="onRemoveUser(user.id)" mat-icon-button>
@@ -26,4 +32,8 @@
       </span>
     </div>
   </mat-list-item>
-</mat-list>
+</mat-list> 
+} @else {
+  <p style="margin-top: 0;">No male users</p>
+}
+</div>

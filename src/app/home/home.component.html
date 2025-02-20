@@ -17,16 +17,14 @@
 </mat-grid-list>
 <mat-grid-list
   gutterSize="50px"
-  rowHeight="2:1"
+  rowHeight="1:1"
   cols="2"
   style="margin-left: 30px"
 >
-  <mat-grid-tile style="background-color: lightgray; height: 50%">
+  <mat-grid-tile class="padding" style="background-color: lightgray; height: 50%">
     <app-form></app-form>
   </mat-grid-tile>
-  <mat-grid-tile style="position: absolute; bottom: 50%">
-    <div>
+  <mat-grid-tile class="no-padding" style="height: 50%; overflow: visible;">
       <app-user-list></app-user-list>
-    </div>
   </mat-grid-tile>
 </mat-grid-list>
