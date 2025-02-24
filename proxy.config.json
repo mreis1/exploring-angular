@@ -9,6 +9,12 @@
         "target": "http://localhost:4000",
         "secure": false,
         "changeOrigin": true,
-        "withCredentials": true
+        "withCredentials": true,
+        "headers": {
+            "X-Frame-Options": "SAMEORIGIN",
+            "Connection": "keep-alive"
+        },
+        "proxyTimeout": 120000,
+        "timeout": 120000
     }
 }

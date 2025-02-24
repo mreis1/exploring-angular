@@ -30,9 +30,13 @@ const browserDistFolder = resolve(serverDistFolder, '../browser');
 const angularApp = new AngularNodeAppEngine();
 const app = express();
 const server = new Http.Server(app);
-app.use(express.json());
+server.maxHeadersCount = 500;
+server.headersTimeout = 120000;
+server.setTimeout(120000);
+server.keepAliveTimeout = 120000;
+app.use(express.json({ limit: '10mb'}));
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cors({
   origin: 'http://localhost:4200',
   credentials: true
@@ -49,6 +53,19 @@ app.use(cookieSession({
 
 const protection = csrf({ cookie: true });
 
+const checkFileName = (filename: string): string => {
+  const fixName = filename
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9.]/g, "_")
+    .replace(/_+/g, "_")
+    .toLowerCase();
+  const parts = fixName.split(".");
+  const extension = parts.pop();
+  const fixedName = parts.join(".");
+  return `${fixedName}.${extension}`;
+}
+
 const uploadDir = path.join(process.cwd(), 'public', 'upload');
 
 const storage = multer.diskStorage({
@@ -56,7 +73,8 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-      cb(null, Date.now() + '_' + file.originalname);
+    const filename = checkFileName(file.originalname);
+    cb(null, Date.now() + '_' + filename);
   },
 })
 
@@ -73,6 +91,20 @@ app.post('/api/upload', upload.single("file"), function (req, res) {
 })
 
 app.use('/upload', express.static(uploadDir));
+
+app.post('/api/upload-blob', async (req, res, next) => {
+  try {
+    const { image2 } = req.body;
+    if (!image2 || typeof image2 !== 'string') {
+      return res.status(400).json({ message: 'No image provided' });
+    }
+    const imageBuffer = Buffer.from(image2, 'base64');
+    console.log("Image converted to Buffer:", imageBuffer.length, "bytes")
+    return res.status(200).json({ image2 });
+  } catch (error) {
+    return next(error);
+  }
+});
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   if (req.path === '/api/login' || req.path === '/api/logout') {
@@ -131,7 +163,7 @@ const logout = async (req: any, res: Response, next: NextFunction) => {
 const register = async (req: any, res: Response, next: NextFunction) => {
   try {
     console.log(req.body);
-    const { email, password, name, gender, birthDate, image } = req.body.user;
+    const { email, password, name, gender, birthDate, image, image2 } = req.body.user;
     if (!email || !password || !name || !gender || !birthDate) {
       return res.status(400).json({ message: 'This fields are required' });
     }
@@ -140,11 +172,17 @@ const register = async (req: any, res: Response, next: NextFunction) => {
     if (data.length) {
       return res.status(400).json({ message: 'User already exists' });
     }
+    let imageBuffer = null;
+    if (image2) {
+      imageBuffer = Buffer.from(image2, 'base64');
+    }
     const queryInsert =
-      'INSERT INTO rxjs.users(email, password, name, gender, birthDate, image) VALUES (?, ?, ?, ?, ?, ?)';
-    await db.execute(queryInsert, [email, password, name, gender, birthDate, image || null]);
+      'INSERT INTO rxjs.users(email, password, name, gender, birthDate, image, image2) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    await db.execute(queryInsert, [email, password, name, gender, birthDate, image || null, imageBuffer]);
     const [newUser]: any = await db.execute(querySelect, [email]);
-    req.session.user = newUser[0];
+    if (!req.session.user) {
+      req.session.user = newUser[0];
+    }
     return res.status(200).json({ message: 'User created successfully', user: newUser[0] });
   } catch (error) {
     return next(error);
@@ -155,9 +193,27 @@ const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const query = 'SELECT * FROM rxjs.users';
     const [results]: any = await db.execute(query);
-    res.status(200).json(results);
+    const users = results.map((user: any) => ({
+      ...user,
+      image2: user.image2 ? user.image2.toString('base64') : null
+    }))
+    res.status(200).json(users);
   } catch (error) {
     next(error);
+  }
+}
+
+const deleteUsers = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.params.id;
+    if (req.session.user?.id === userId) {
+      return res.status(403).json({ message: "Cannot delete an active user session" });
+    }
+    const query = 'DELETE FROM rxjs.users WHERE id = ?';
+    await db.execute(query, [userId]);
+    return res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    return next(error);
   }
 }
 
@@ -168,6 +224,7 @@ router.post('/logout', logout);
 router.post('/register', register);
 router.get('/check', checkLogin);
 router.get('/users', getUsers);
+router.delete('/user/:id', deleteUsers);
 
 app.use('/api', router);
 
@@ -287,6 +344,9 @@ if (isMainModule(import.meta.url)) {
         console.log('id', id);
         const query = "DELETE FROM rxjs.tracker WHERE id = ?";
         const [result]: any = await db.execute(query, [id]);
+        if (result.affectedRows === 0) {
+          return callback({ success: false, message: "Tracker not found" });
+        }
         io.emit("tracker-deleted", id);
         callback({ success: true });
       } catch (error) {

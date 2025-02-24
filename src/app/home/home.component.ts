@@ -26,7 +26,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.userService.getCurrentUser();
-    this.userService.getUsers();
+    //this.userService.getUsers();
   }
 
 }

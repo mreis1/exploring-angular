@@ -27,9 +27,7 @@ export class HeaderComponent {
   onLogout(): void {
     this.http.post('/api/logout', {}, { withCredentials: true }).subscribe(() => {
       this.userService.currentUserSignal.set(null);
-      this.router.navigateByUrl('/', { skipLocationChange: true}).then(() => {
-        this.router.navigate([this.router.url]);
-      })
+      this.router.navigateByUrl('/auth');
     }); 
   }
 }

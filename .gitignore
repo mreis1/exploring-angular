@@ -3,6 +3,9 @@
 # Env
 .env
 
+# Uploaded images
+upload
+
 # Compiled output
 /dist
 /tmp

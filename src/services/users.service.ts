@@ -51,7 +51,7 @@ export class UserService {
           this.currentUserSignal.set(null);
           return of(null);
         })
-      );
+      ).subscribe();
   }
 
   upload(file: File): Observable<string> {
@@ -71,6 +71,24 @@ export class UserService {
       )
   }
 
+  uploadToDatabase(file: File): Observable<string> {
+    return new Observable(observer => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = (reader.result as string).split(',')[1];
+        this.http.post<{ image2: string }>('/api/upload-blob', { image2: base64String },
+          { headers: {'Content-Type': 'application/json'} }
+        ).subscribe({
+          next: (response) => observer.next(response.image2),
+          error: (error) => observer.error(error),
+          complete: () => observer.complete()
+        });
+      };
+      reader.onerror = error => observer.error(error);
+    });
+  }
+
   register(formValue: any): void {
     try {
        this.http
@@ -88,9 +106,7 @@ export class UserService {
           .subscribe((response) => {
             console.log(response);
             this.currentUserSignal.set(response.user);
-            setTimeout(() => {
-              this.router.navigateByUrl('/home');
-            }, 100);
+            this.router.navigateByUrl('/home');
           });
       });
     } catch (error) {
@@ -100,9 +116,68 @@ export class UserService {
   }
 
   getUsers(): void {
+    if (this.usersSignal()?.length) {
+      return;
+    }
     this.http
       .get<User[]>('/api/users')
       .subscribe((users) => this.usersSignal.set(users));
+  }
+
+  addUser(formValue: any): void {
+    try {
+      this.http
+      .get<{ csrfToken: string }>('api/csrf-token', { withCredentials: true })
+      .subscribe((csrfResponse) => {
+        this.http.post<{message: string, user: User}>(
+          '/api/register',
+          { user: formValue },
+          {
+            headers: { 'X-CSRF-Token': csrfResponse.csrfToken },
+            withCredentials: true,
+          }
+        ).subscribe((response) => {
+          console.log(response);
+          this.usersSignal.update((users) => [...users, response.user]);
+        })
+      })
+    } catch (error) {
+      this.showMessage();
+      console.error(error);
+    }
+  }
+
+  removeUser(id: number): void {
+    try {
+      this.http.get<{ csrfToken: string }>('api/csrf-token', { withCredentials: true })
+      .subscribe((csrfResponse) => {
+        this.http.delete<{message: string}>(
+          `/api/users/${id}`,
+          {
+            headers: { 'X-CSRF-Token': csrfResponse.csrfToken },
+            withCredentials: true,
+          }
+        ).subscribe((response) => {
+          console.log("User deleted", response);
+          this.usersSignal.update(users => users.filter(user => user.id !== id));
+        })
+      })
+    } catch (error: any) {
+      if (error.status === 403) {
+        this.snackBar.open("This user has an active login, so it can't be deleted."), { duration: 3000 };
+      } else {
+        console.error(error);
+        this.showMessage();
+      }
+    }  
+  }
+
+  filterMenUsers(): User[] {
+    return this.maleUsers();
+  }
+
+  filterWomenUsers(): User[] {
+    return this.femaleUsers();
   }
 
   showMessage(): void {
@@ -169,55 +244,4 @@ export class UserService {
   //getAllUsers(): Observable<Users[]> {
   //  return this.users$;
   //}
-
-  addUser(data: {
-    email: string;
-    password: string;
-    gender: string;
-    name: string;
-    birthDate: string;
-    image: string;
-  }): void {
-    const newUser: User = {
-      id: Math.random(),
-      email: data.email,
-      password: data.password,
-      gender: data.gender,
-      name: data.name,
-      birthDate: data.birthDate,
-      image: data.image,
-    };
-    this.usersSignal.update((currentUsers) => [...currentUsers, newUser]);
-    this.snackBar.open(`User ${newUser.name} added successfully`, '', {
-      duration: 2000,
-    });
-  }
-
-  removeUser(id: number): void {
-    let removedUser: User | null = null;
-    this.usersSignal.update((currentUsers) => {
-      const userToRemove = currentUsers.find((user) => user.id === id);
-      if (!userToRemove) {
-        this.snackBar.open('User not found', '', { duration: 2000 });
-        return currentUsers;
-      }
-      removedUser = userToRemove;
-      return currentUsers.filter((user) => user.id !== id);
-    });
-    if (removedUser) {
-      this.snackBar.open(`User removed successfully`, '', { duration: 2000 });
-    } else if (this.usersSignal().length === 0) {
-      this.snackBar.open('There are no users to remove', '', {
-        duration: 2000,
-      });
-    }
-  }
-
-  filterMenUsers(): User[] {
-    return this.maleUsers();
-  }
-
-  filterWomenUsers(): User[] {
-    return this.femaleUsers();
-  }
 }

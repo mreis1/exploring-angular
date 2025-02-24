@@ -35,7 +35,7 @@ export class FemaleListComponent /*implements OnInit*/ {
   //  })
   //}
 
-  onRemoveUser(id: string): void {
-    this.userService.removeUser(id);
-  }
+ // onRemoveUser(id: string): void {
+ //   this.userService.removeUser(id);
+ // }
 }

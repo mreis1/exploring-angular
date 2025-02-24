@@ -114,6 +114,7 @@ export class SocketService {
     createTracker(tracker: OmitedTrackers, callback: (data: any) => void): void {
         this.socket?.emit("create-tracker", tracker, (data: any) => {
             if (data.success) {
+                //this.trackersSignal.update(trackers => [...trackers, data.tracker]);
                 callback(data.tracker);
             } else {
                 this.showMessage();
@@ -151,5 +152,5 @@ export class SocketService {
 
     showMessage(): void {
         this.snackBar.open("Something went wrong. Please check your connection and try again later."), { duration: 3000 };
-      }
+    }
 }

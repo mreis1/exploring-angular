@@ -14,7 +14,7 @@ import { UserService } from '../../services/users.service';
 import { User } from '../user';
 import { DatePipe } from '@angular/common';
 import { TimeAgoPipe } from '../time-ago.pipe';
-import {Trackers} from '../trackers';
+import { Trackers } from '../trackers';
 
 @Component({
   selector: 'app-stream',
@@ -37,7 +37,10 @@ export class StreamComponent implements OnInit {
     return new Map(this.users()?.map(user => [user.id, user]) || []);
   })
 
-  userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  imageUrl = (userId: number): string => {
+    const user = this.getUser(userId);
+    return user?.image ? `/upload/${user.image}` : "https://material.angular.io/assets/img/examples/shiba2.jpg";
+  }
 
   ngOnInit(): void {
     this.socketService.getDevices();

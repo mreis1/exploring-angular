@@ -12,6 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { HttpClient } from '@angular/common/http';
 import { User } from '../user';
 import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
 
 @Component({
   selector: 'app-auth',
@@ -49,6 +50,7 @@ export class AuthComponent {
     name: FormControl<string>;
     birthDate: FormControl<string>;
     image: FormControl<any>;
+    image2: FormControl<any>;
   }> = new FormGroup({
     email: new FormControl('', {
       nonNullable: true,
@@ -72,6 +74,9 @@ export class AuthComponent {
     }),
     image: new FormControl('', {
       nonNullable: true,
+    }),
+    image2: new FormControl('', {
+      nonNullable: true,
     })
   });
 
@@ -92,33 +97,36 @@ export class AuthComponent {
       this.userService.showMessage();
       console.error(error);
     }
-
   }
 
   onRegister() : void {
     const formValue = this.registerForm.getRawValue();
     formValue.birthDate = new Date(formValue.birthDate).toISOString().slice(0,10);
     const file: File | null = formValue.image ?? null;
-    if (file instanceof File) {
-      this.userService.upload(file).subscribe((filename) => {
-        console.log("Upload completed, received filename:", filename);
-        // this.registerForm.get('image')?.setValue(filename);
-        formValue.image = filename;
-        this.userService.register(formValue);
-        this.userService.filename.set(null);
-      })
-    } else {
+    const file2: File | null = formValue.image2 ?? null;
+    let multerUpload$ = file ? this.userService.upload(file) : of(null);
+    let blobUpload$ = file2 ? this.userService.uploadToDatabase(file2) : of(null);
+    forkJoin([multerUpload$, blobUpload$]).subscribe(([filename, base64Image]) => {
+      formValue.image = filename || null;
+      formValue.image2 = base64Image || null;
       this.userService.register(formValue);
-    }
+      this.userService.filename.set(null);
+      this.router.navigateByUrl('/home');
+    })
   }
 
-  onFileSelected(event: Event): void {
+  onFileSelected(event: Event, type: 'file' | 'blob'): void {
     const input = event.target as HTMLInputElement;
     console.log(input!.files?.[0]); // files from html input
     if (input.files?.length) {
-      this.registerForm.get('image')?.setValue(input.files[0]);
+      if (type === 'file') {
+       this.registerForm.get('image')?.setValue(input.files[0]); 
+      } else {
+        this.registerForm.get('image2')?.setValue(input.files[0]);
+      } 
     } else {
       this.registerForm.get('image')?.setValue(null);
+      this.registerForm.get('image2')?.setValue(null);
     }
   }
 }

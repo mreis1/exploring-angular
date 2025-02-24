@@ -6,4 +6,5 @@ export interface User {
     name: string,
     birthDate: string,
     image: any,
+    image2: any
 }

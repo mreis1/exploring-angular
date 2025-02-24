@@ -8,7 +8,7 @@
           <span>{{ tracker.stationName }}</span>
         </div>
         <div>
-          @let activity = (tracker?.last_activity | date:'shortTime':userTimezone);
+          @let activity = (tracker?.last_activity | date:'shortTime');
           @if (tracker.last_activity) {
             <span>Activity over past </span>
             <span>{{ activity }}</span>
@@ -21,7 +21,7 @@
         <mat-card-content style="flex: 1;">
           <div style="margin-bottom: 10px;" *ngFor="let event of socketService.eventsSignal()">
             <div class="time">
-              @let time = (event?.created_at | date:'shortTime': userTimezone);
+              @let time = (event?.created_at | date:'shortTime');
               @let timeAgo = (event?.created_at | timeAgo);
               @if (event.created_at) {
                 <span>{{ time }}</span>
@@ -31,8 +31,7 @@
               }
             </div>
             <div class="item">
-              @let imageUrl = getUser(event.id_user)?.image ?? 'https://material.angular.io/assets/img/examples/shiba2.jpg';
-              <img [src]="imageUrl" alt="" mat-card-avatar class="avatar" />
+              <img [src]="imageUrl(event.id_user)" alt="" mat-card-avatar class="avatar" />
               <div>
                 @let name = getUser(event.id_user)?.name;
                 <p>{{ name }}</p>

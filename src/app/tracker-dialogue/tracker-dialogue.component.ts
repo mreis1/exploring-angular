@@ -67,6 +67,7 @@ export class TrackerDialogueComponent implements OnInit {
           this.message = 'Device added';
           this.visibleForm = true;
           this.deviceForm.reset();
+          this.closeDialogue();
         } else {
           this.message = 'Error adding tracker';
         }
