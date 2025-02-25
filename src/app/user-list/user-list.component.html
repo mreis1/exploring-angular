@@ -1,6 +1,7 @@
 <div style="display: flex; justify-content: start; align-items: center; flex-direction: column; ">
  <p style="margin-top: 0;">Last 5 females</p>
  @if (femaleUsers()) {
+   <!--<app-users [data]="femaleUsers()"></app-users>>-->
   <mat-list *ngFor="let user of femaleUsers()">
   <mat-list-item style="background-color: lightgray; width: 100%">
     <div style="display: flex; justify-content: space-between">
@@ -20,9 +21,13 @@
 
 <p>Last 5 males</p>
 @if (maleUsers()) {
+  <!--<app-users [data]="maleUsers()"></app-users>>-->
  <mat-list *ngFor="let user of maleUsers()">
   <mat-list-item style="background-color: lightgray; width: 100%">
     <div style="display: flex; justify-content: space-between">
+      @if(user.image) {
+        <img alt="image 1" height="50px" [src]="user.image">
+      }
       <span style="display: flex; align-items: center">{{ user.name }}</span>&nbsp;&nbsp;
       <span style="display: flex; align-items: center; cursor: pointer">
         {{ user.birthDate | date:'shortDate' }}
@@ -32,7 +37,7 @@
       </span>
     </div>
   </mat-list-item>
-</mat-list> 
+</mat-list>
 } @else {
   <p style="margin-top: 0;">No male users</p>
 }

@@ -134,21 +134,21 @@ export class SocketService {
         });
     }
 
-    onDeviceCreated() {
-        this.socket?.on("device-created", (device) => console.log(device));
-    }
-
-    onEventCreated() {
-        this.socket?.on("event-created", (event) => console.log(event));
-    }
-
-    onTrackerCreated() {
-        this.socket?.on("tracker-created", (tracker) => console.log(tracker));
-    }
-
-    onTrackerDeleted() {
-        this.socket?.on("tracker-deleted", (id) => console.log(id));
-    }
+    // onDeviceCreated() {
+    //     this.socket?.on("device-created", (device) => console.log(device));
+    // }
+    //
+    // onEventCreated() {
+    //     this.socket?.on("event-created", (event) => console.log(event));
+    // }
+    //
+    // onTrackerCreated() {
+    //     this.socket?.on("tracker-created", (tracker) => console.log(tracker));
+    // }
+    //
+    // onTrackerDeleted() {
+    //     this.socket?.on("tracker-deleted", (id) => console.log(id));
+    // }
 
     showMessage(): void {
         this.snackBar.open("Something went wrong. Please check your connection and try again later."), { duration: 3000 };

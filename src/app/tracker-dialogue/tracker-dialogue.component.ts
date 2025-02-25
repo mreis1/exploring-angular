@@ -47,13 +47,13 @@ export class TrackerDialogueComponent implements OnInit {
   addTracker(): void {
     if (this.trackerForm.valid) {
       const tracker = this.trackerForm.getRawValue();
-      this.socketService.createTracker(tracker, (response) => {
-        if (response.success) {
+      this.socketService.createTracker(tracker, (response: {id: number}[]) => {
+        if (response?.[0].id) {
           this.message = 'Tracker added';
           this.trackerForm.reset();
           this.closeDialogue();
         } else {
-          this.message = 'Error adding tracker' + response.message;
+          this.message = 'Error adding tracker'; // @todo mostrar a messagem em caso de error
         }
       })
     }

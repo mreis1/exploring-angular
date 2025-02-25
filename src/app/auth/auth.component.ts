@@ -106,9 +106,15 @@ export class AuthComponent {
     const file2: File | null = formValue.image2 ?? null;
     let multerUpload$ = file ? this.userService.upload(file) : of(null);
     let blobUpload$ = file2 ? this.userService.uploadToDatabase(file2) : of(null);
+    /**
+     * 1. tabela para os UPLOAD
+     *  id(guid) <-- ids não enumeráveis por questões de segurança
+     *  path     <-- para o file no filesystem
+     *
+     */
     forkJoin([multerUpload$, blobUpload$]).subscribe(([filename, base64Image]) => {
-      formValue.image = filename || null;
-      formValue.image2 = base64Image || null;
+      formValue.image = filename || null; // enviar o guid do upload respectivo
+      formValue.image2 = base64Image || null; // enviar o guid do upload respectivo
       this.userService.register(formValue);
       this.userService.filename.set(null);
       this.router.navigateByUrl('/home');
@@ -120,10 +126,10 @@ export class AuthComponent {
     console.log(input!.files?.[0]); // files from html input
     if (input.files?.length) {
       if (type === 'file') {
-       this.registerForm.get('image')?.setValue(input.files[0]); 
+       this.registerForm.get('image')?.setValue(input.files[0]);
       } else {
         this.registerForm.get('image2')?.setValue(input.files[0]);
-      } 
+      }
     } else {
       this.registerForm.get('image')?.setValue(null);
       this.registerForm.get('image2')?.setValue(null);

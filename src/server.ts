@@ -6,7 +6,7 @@ import {
 } from '@angular/ssr/node';
 import express, { NextFunction, Request, Response
  } from 'express';
-import path, { dirname, resolve } from 'node:path';
+import path, { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { db } from './db';
 import multer from 'multer';
@@ -16,6 +16,8 @@ import cookieSession from 'cookie-session';
 import cookieParser from 'cookie-parser';
 import csrf from 'csurf';
 import cors from 'cors';
+import * as fs from 'node:fs';
+const fsAsync = fs.promises;
 
 console.log('---------#2')
 console.log("🔹 Loaded Database Config:");
@@ -46,9 +48,9 @@ app.use(cookieSession({
   name: 'session',
   secret: process.env["SESSION_SECRET"] || "supersecret",
   maxAge: 24 * 60 * 60 * 1000,
-  secure: false, 
-  httpOnly: true, 
-  sameSite: "lax" 
+  secure: false,
+  httpOnly: true,
+  sameSite: "lax"
 }));
 
 const protection = csrf({ cookie: true });
@@ -162,12 +164,12 @@ const logout = async (req: any, res: Response, next: NextFunction) => {
 
 const register = async (req: any, res: Response, next: NextFunction) => {
   try {
-    console.log(req.body);
+    console.log('[register][body] ' , req.body);
     const { email, password, name, gender, birthDate, image, image2 } = req.body.user;
     if (!email || !password || !name || !gender || !birthDate) {
       return res.status(400).json({ message: 'This fields are required' });
     }
-    const querySelect = 'SELECT * FROM rxjs.users WHERE email = ?';
+    const querySelect = 'SELECT id FROM rxjs.users WHERE email = ?';
     const [data]: any = await db.execute(querySelect, [email]);
     if (data.length) {
       return res.status(400).json({ message: 'User already exists' });
@@ -178,30 +180,72 @@ const register = async (req: any, res: Response, next: NextFunction) => {
     }
     const queryInsert =
       'INSERT INTO rxjs.users(email, password, name, gender, birthDate, image, image2) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    await db.execute(queryInsert, [email, password, name, gender, birthDate, image || null, imageBuffer]);
-    const [newUser]: any = await db.execute(querySelect, [email]);
+    await db.execute(queryInsert, [email, password, name, gender, birthDate, image || null, imageBuffer]); // returning id
+
+    const query = 'SELECT id, name, email, password, gender, birthDate, (image is not null) as has_image, (image2 is not null) as has_image2 FROM rxjs.users' +
+      ' where email = ?';
+    const [results]: any = await db.execute(query, [email]);
+    const users = results.map((user: any) => ({
+      ...user,
+      image: user.has_image ? publicLink.image(user.id) : null,
+      image2: user.has_image2 ? publicLink.image2(user.id) : null,
+    }))
     if (!req.session.user) {
-      req.session.user = newUser[0];
+      req.session.user = users[0];
     }
-    return res.status(200).json({ message: 'User created successfully', user: newUser[0] });
+    return res.status(200).json({ message: 'User created successfully', user: users[0] });
   } catch (error) {
     return next(error);
   }
 };
 
+//
+export const publicLink = {
+  image: (id: number) => `/api/users/${id}/image`,
+  image2: (id: number) => `/api/users/${id}/image2`,
+}
+
 const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const query = 'SELECT * FROM rxjs.users';
+    const query = 'SELECT id, name, email, password, gender, birthDate, (image is not null) as has_image, (image2 is not null) as has_image2 FROM rxjs.users;';
     const [results]: any = await db.execute(query);
     const users = results.map((user: any) => ({
       ...user,
-      image2: user.image2 ? user.image2.toString('base64') : null
+      image: user.has_image ? publicLink.image(user.id) : null,
+      image2: user.has_image2 ? publicLink.image2(user.id) : null,
     }))
     res.status(200).json(users);
   } catch (error) {
     next(error);
   }
 }
+
+// fileType <-- https://www.npmjs.com/package/file-type
+const getUserImage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const query = 'SELECT image FROM rxjs.users where id = ?';
+    const id: number = +req.params['id'];
+    const row: {image: string | null } = ((await db.execute(query, [id]))[0] as any)[0];
+    if (!row) {
+      return next(new Error('User not found'));
+    }
+    if (!row.image) {
+      return next(new Error('User has no image.'));
+    }
+    console.log(row);
+
+    res.contentType('image/jpg') // @todo remplace with fileType detection
+
+    const imagePath = path.resolve(path.join(uploadDir, row.image!)); // compose image path
+    console.log(imagePath)
+
+    const d = await fsAsync.readFile(imagePath!); // read image from file system
+    res.status(200).send(d).end();
+  } catch (error) {
+    next(error);
+  }
+}
+
 
 const deleteUsers = async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -224,6 +268,8 @@ router.post('/logout', logout);
 router.post('/register', register);
 router.get('/check', checkLogin);
 router.get('/users', getUsers);
+router.get('/users/:id(\\d+)/image', getUserImage);
+// router.get('/users/:id(\\d+)/image2', () => {});
 router.delete('/user/:id', deleteUsers);
 
 app.use('/api', router);
@@ -331,7 +377,9 @@ if (isMainModule(import.meta.url)) {
         const [result]: any = await db.execute(query, [id_device]);
         const querySelect = "SELECT rxjs.tracker.id, rxjs.tracker.id_device, rxjs.device.name, rxjs.device.stationName FROM rxjs.tracker INNER JOIN rxjs.device ON rxjs.tracker.id_device = rxjs.device.id WHERE rxjs.tracker.id = ?"
         const [trackerDetails] = await db.execute(querySelect, [result.insertId]);
-        io.emit("tracker-created", trackerDetails);
+        // const trackerDetails = await db.execute(querySelect, [result.insertId]);
+        io.emit("tracker-created", (trackerDetails as any)[0] ?? null);
+        // io.emit("tracker-created", (trackerDetails as any)[0][0] ?? null);
         callback({ success: true, tracker: trackerDetails});
       } catch (error) {
         callback({ success: false, message: "Error creating tracker", error});
