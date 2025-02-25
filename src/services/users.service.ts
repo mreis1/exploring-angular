@@ -51,7 +51,7 @@ export class UserService {
           this.currentUserSignal.set(null);
           return of(null);
         })
-      ).subscribe();
+      );
   }
 
   upload(file: File): Observable<string> {
