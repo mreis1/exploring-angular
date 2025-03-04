@@ -9,14 +9,14 @@ import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-users',
-  imports: [CommonModule, MatListModule, MatButtonModule, 
+  imports: [CommonModule, MatListModule, MatButtonModule,
     MatIconModule, DatePipe],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
 })
 export class UsersComponent {
   @Input() users: User[] = [];
-  @Input() listTitle: string = '';
+  @Input() title: string = '';
   @Input() listGender: string = '';
   userService = inject(UserService);
 
