@@ -1,4 +1,19 @@
 <app-header></app-header>
+
+
+
+<!--Tailwind block-->
+<div style="margin: 160px;">
+  <div class="mx-auto flex max-w-sm items-center gap-x-4 rounded-xl bg-white p-6 shadow-lg outline outline-black/5 dark:bg-slate-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10">
+    <img class="size-12 shrink-0" src="/favicon.ico" alt="ChitChat Logo" />
+    <div>
+      <div class="text-xl font-medium text-black dark:text-white">ChitChat</div>
+      <p class="text-gray-500 dark:text-gray-400">You have a new message!</p>
+    </div>
+  </div>
+</div>
+
+
 <mat-grid-list
   gutterSize="16px"
   rowHeight="3:1"
@@ -14,6 +29,9 @@
   <mat-grid-tile style="background-color: lightgray">
     <app-count [mode]="3"></app-count>
   </mat-grid-tile>
+
+
+
 </mat-grid-list>
 <mat-grid-list
   gutterSize="50px"

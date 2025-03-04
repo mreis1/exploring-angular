@@ -1,9 +1,12 @@
 .toolbar {
     justify-content: space-between;
-    min-height: 75px; 
-    position: fixed; 
+    min-height: 75px;
+    position: fixed;
     z-index: 1;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    top: 0;
+    left: 0;
+    right: 0;
 }
 
 .toolbar div {
@@ -12,7 +15,7 @@
 }
 
 .toolbar div:first-child {
-    margin-left: 10px;  
+    margin-left: 10px;
 }
 
 .toolbar div:last-child {
