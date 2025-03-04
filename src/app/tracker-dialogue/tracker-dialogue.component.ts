@@ -1,12 +1,12 @@
 import {Component, inject, OnInit} from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef } from '@angular/material/dialog';
 import { SocketService } from '../../services/socket.service';
 import { FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
-import {response} from 'express';
+import { MatIconModule } from '@angular/material/icon';
+
 
 @Component({
   selector: 'app-tracker-dialogue',

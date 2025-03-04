@@ -16,8 +16,11 @@ import cookieSession from 'cookie-session';
 import cookieParser from 'cookie-parser';
 import csrf from 'csurf';
 import cors from 'cors';
+import fileType from 'file-type';
+import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'node:fs';
 const fsAsync = fs.promises;
+
 
 console.log('---------#2')
 console.log("🔹 Loaded Database Config:");
@@ -69,44 +72,97 @@ const checkFileName = (filename: string): string => {
 }
 
 const uploadDir = path.join(process.cwd(), 'public', 'upload');
+const mediaDir = path.join(process.cwd(), 'public', 'media');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    const filename = checkFileName(file.originalname);
+    const check = checkFileName(file.originalname);
+    const filename = `${uuidv4()}${path.join(check)}`
     cb(null, Date.now() + '_' + filename);
   },
 })
 
 const upload = multer({ storage })
 
-app.post('/api/upload', upload.single("file"), function (req, res) {
-  const file = req.file;
-  if (!file) {
-    console.error("File upload failed: No file received");
-    return res.status(400).json({ message: "File upload failed" });
-  }
-  console.log("File uploaded successfully:", file.filename);
-  return res.status(200).json({ filename: file?.filename});
+app.post('/api/upload', upload.single('image'), async function (req, res, next) {
+  try {
+    const file = req.file;
+    const { image2 } = req.body;
+    let fileResponse = null;
+    let image2Guid = null;
+    if (!file && !image2) {
+      console.error("No images provided");
+      return res.status(400).json({ message: "File upload failed, no images where provided" });
+    }
+    if (file) {
+      fileResponse = file.filename;
+    }
+    if (image2 && typeof image2 === 'string') {
+      image2Guid = uuidv4();
+      const filePath = path.join(uploadDir, `${image2Guid}.jpg`);
+      const query = 'INSERT INTO uploads (id, file_path) VALUES (?, ?)';
+      await db.execute(query, [image2Guid, filePath]);
+      console.log('Temporary upload', filePath);
+    }
+    return res.status(200).json({
+      filename: fileResponse ?? null,
+      image2: image2Guid ?? null
+    })
+  } catch (error) {
+    return next(error);
+  } 
 })
 
 app.use('/upload', express.static(uploadDir));
 
-app.post('/api/upload-blob', async (req, res, next) => {
+//app.post('/api/upload-blob', async (req, res, next) => {
+//  try {
+//    const { image2 } = req.body;
+//    if (!image2 || typeof image2 !== 'string') {
+//      return res.status(400).json({ message: 'No image provided' });
+//    }
+//    const guid = uuidv4();
+//    const filePath = path.join(uploadDir, `${guid}.jpg`);
+//    const query = 'INSERT INTO uploads (id, file_path) VALUES (?, ?)';
+//    await db.execute(query, [guid, filePath]);
+//    console.log('Temporary upload', filePath);
+//    return res.status(200).json({ guid });
+//  } catch (error) {
+//    return next(error);
+//  }
+//});
+
+const migrateImage = async (guid: string, userId: number) => {
   try {
-    const { image2 } = req.body;
-    if (!image2 || typeof image2 !== 'string') {
-      return res.status(400).json({ message: 'No image provided' });
+    if (!guid || !userId) {
+      throw new Error('Missing guid or userId');
     }
-    const imageBuffer = Buffer.from(image2, 'base64');
-    console.log("Image converted to Buffer:", imageBuffer.length, "bytes")
-    return res.status(200).json({ image2 });
+    const newFilePath = path.join(mediaDir, `${guid}.jpg`);
+    if (fs.existsSync(newFilePath)) {
+      console.log(`Image2 already exists in file system for userId ${userId} with path: ${newFilePath}`);
+      return newFilePath;
+    }
+    const querySelect = 'SELECT file_path FROM uploads WHERE id = ?';
+    const [rows]: any = await db.execute(querySelect, [guid]);
+    if (!rows.length) {
+      throw new Error('File not found in temporary storage');
+    }
+    const tempFilePath = rows[0].file_path;
+    await fsAsync.rename(tempFilePath, newFilePath);
+    const queryUpdate = 'UPDATE rxjs.users SET image2 = ? WHERE id = ?';
+    await db.execute(queryUpdate, [newFilePath, userId]);
+    console.log(`Image migrated successfully for userId ${userId}`);
+    const queryDelete = 'DELETE FROM uploads WHERE id = ?';
+    await db.execute(queryDelete, [guid]);
+    return newFilePath;
   } catch (error) {
-    return next(error);
+    console.error('Error migrating image2', error);
+    throw error;
   }
-});
+}
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   if (req.path === '/api/login' || req.path === '/api/logout') {
@@ -174,17 +230,17 @@ const register = async (req: any, res: Response, next: NextFunction) => {
     if (data.length) {
       return res.status(400).json({ message: 'User already exists' });
     }
-    let imageBuffer = null;
-    if (image2) {
-      imageBuffer = Buffer.from(image2, 'base64');
-    }
     const queryInsert =
       'INSERT INTO rxjs.users(email, password, name, gender, birthDate, image, image2) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    await db.execute(queryInsert, [email, password, name, gender, birthDate, image || null, imageBuffer]); // returning id
-
+    const [insertResult]: any = await db.execute(queryInsert, [email, password, name, gender, birthDate, image || null, null]); // returning id
+    const userId = insertResult.insertId;
+    let image2Path = null;
+    if (image2) {
+      image2Path = await migrateImage(image2, userId);
+    }
     const query = 'SELECT id, name, email, password, gender, birthDate, (image is not null) as has_image, (image2 is not null) as has_image2 FROM rxjs.users' +
-      ' where email = ?';
-    const [results]: any = await db.execute(query, [email]);
+      ' where id = ?';
+    const [results]: any = await db.execute(query, [userId]);
     const users = results.map((user: any) => ({
       ...user,
       image: user.has_image ? publicLink.image(user.id) : null,
@@ -234,18 +290,38 @@ const getUserImage = async (req: Request, res: Response, next: NextFunction) => 
     }
     console.log(row);
 
-    res.contentType('image/jpg') // @todo remplace with fileType detection
-
     const imagePath = path.resolve(path.join(uploadDir, row.image!)); // compose image path
-    console.log(imagePath)
-
+    console.log(imagePath);
     const d = await fsAsync.readFile(imagePath!); // read image from file system
+    const type = await fileType.fromBuffer(d);
+    if (!type) {
+      return next(new Error('Unable to detect file type'));
+    }
+    res.contentType(type.mime);
     res.status(200).send(d).end();
   } catch (error) {
     next(error);
   }
 }
 
+const getUserImage2 = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id: number = +req.params['id'];
+    const query = 'SELECT image2 FROM rxjs.users where id = ?';
+    const row: {image2: string | null} = ((await db.execute(query, [id]))[0] as any)[0];
+    if (!row) {
+    return next(new Error('User not found'));
+    }
+    if (!row.image2) {
+      return next(new Error('User has no image2.'));
+    }
+    console.log(row);
+    const imagePath = row.image2;
+    res.status(200).json(imagePath);
+  } catch (error) {
+    next(error);
+  }
+}
 
 const deleteUsers = async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -269,8 +345,8 @@ router.post('/register', register);
 router.get('/check', checkLogin);
 router.get('/users', getUsers);
 router.get('/users/:id(\\d+)/image', getUserImage);
-// router.get('/users/:id(\\d+)/image2', () => {});
-router.delete('/user/:id', deleteUsers);
+router.get('/users/:id(\\d+)/image2', getUserImage2);
+router.delete('/users/:id', deleteUsers);
 
 app.use('/api', router);
 

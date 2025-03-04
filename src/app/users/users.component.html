@@ -1,0 +1,26 @@
+<p style="margin-top: 0;">{{ listTitle }}</p>
+  @if (users.length > 0) {
+    <mat-list *ngFor="let user of users">
+      <mat-list-item style="background-color: lightgray; width: 100%">
+        <div style="display: flex; justify-content: space-between">
+          @if (user.image) {
+            <img alt="User Image" height="50px" [src]="user.image">
+          }
+          @if (user.image2) {
+            <img alt="User Image 2" height="50px" [src]="user.image2">
+          }
+          <span style="display: flex; align-items: center;">{{ user.name }}</span>&nbsp;&nbsp;
+          <span style="display: flex; align-items: center; cursor: pointer;">
+            {{ user.birthDate | date:'shortDate' }}
+            <button (click)="onRemoveUser(user.id)" mat-icon-button>
+              <mat-icon fontIcon="delete"></mat-icon>
+            </button>
+          </span>
+        </div>
+      </mat-list-item>
+    </mat-list>
+  } @else {
+    <p style="margin-top: 0;">No {{ listGender }} found</p>
+  }
+
+

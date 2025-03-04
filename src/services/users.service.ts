@@ -1,12 +1,12 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { User } from '../app/user';
-import { BehaviorSubject, catchError, Observable, tap, of, map, throwError } from 'rxjs';
+import { catchError, Observable, tap, of, throwError } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { io, Socket } from 'socket.io-client';
 import { response } from 'express';
 import { error } from 'console';
+
 
 @Injectable({
   providedIn: 'root',
@@ -54,42 +54,60 @@ export class UserService {
       );
   }
 
-  upload(file: File): Observable<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http
-      .post<{ filename: string }>('/api/upload', formData).pipe(
-        tap((response) => {
-          console.log('Upload response:', response);
-          // this.filename.set(response.filename);
-        }),
-        map((response) => response.filename),
-        catchError((error) => {
-          console.error(error);
-          return throwError(() => new Error('File upload failed'));
-        })
-      )
-  }
-
-  uploadToDatabase(file: File): Observable<string> {
+  upload(files: {image?: File | null; image2?: File | null}): Observable<{ filename?: string; guid?: string}> {
     return new Observable(observer => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = (reader.result as string).split(',')[1];
-        this.http.post<{ image2: string }>('/api/upload-blob', { image2: base64String },
-          { headers: {'Content-Type': 'application/json'} }
-        ).subscribe({
-          next: (response) => observer.next(response.image2),
-          error: (error) => observer.error(error),
-          complete: () => observer.complete()
-        });
-      };
-      reader.onerror = error => observer.error(error);
-    });
+      const formData = new FormData();
+      if (files.image) {
+        formData.append('image', files.image);
+      }
+      if (files.image2) {
+        const reader = new FileReader();
+        reader.readAsDataURL(files.image2);
+        reader.onload = () => {
+          const base64String = (reader.result as string).split(',')[1];
+          formData.append('image2', base64String);
+          this.http.post<{ filename?: string; guid?: string }>('/api/upload', formData, { headers: {'Accept': 'application/json'}}).subscribe({
+            next: (response) => {
+              console.log('Upload response:', response);
+              observer.next(response);
+              observer.complete();
+            },
+            error: (error) => observer.error(error)
+          })
+        }
+        reader.onerror = error => observer.error(error);
+      } else {
+        this.http.post<{ filename?: string; guid?: string }>('/api/upload', formData, { headers: { 'Accept': 'application/json' }}).subscribe({
+          next: (response) => {
+            console.log('Upload response:', response);
+            observer.next(response);
+            observer.complete();
+          },
+          error: (error) => observer.error(error)
+        })
+      }
+    })
   }
 
-  register(formValue: any): void {
+  //uploadToDatabase(file: File): Observable<string> {
+  //  return new Observable(observer => {
+  //    const reader = new FileReader();
+  //    reader.readAsDataURL(file);
+  //    reader.onload = () => {
+  //      const base64String = (reader.result as string).split(',')[1];
+  //      this.http.post<{ image2: string }>('/api/upload-blob', { image2: base64String },
+  //        { headers: {'Content-Type': 'application/json'} }
+  //      ).subscribe({
+  //        next: (response) => observer.next(response.image2),
+  //        error: (error) => observer.error(error),
+  //        complete: () => observer.complete()
+  //      });
+  //    };
+  //    reader.onerror = error => observer.error(error);
+  //  });
+  //}
+
+  register(formValue: any, state: boolean): void {
     try {
        this.http
       .get<{ csrfToken: string }>('api/csrf-token', { withCredentials: true })
@@ -105,8 +123,13 @@ export class UserService {
           )
           .subscribe((response) => {
             console.log(response);
-            this.currentUserSignal.set(response.user);
-            this.router.navigateByUrl('/home');
+            if (state === true) {
+              this.currentUserSignal.set(response.user);
+              this.usersSignal.update((users) => [...users, response.user]);
+              this.router.navigateByUrl('/home');
+            } else {
+              this.usersSignal.update((users) => [...users, response.user]);
+            } 
           });
       });
     } catch (error) {
@@ -124,28 +147,28 @@ export class UserService {
       .subscribe((users) => this.usersSignal.set(users));
   }
 
-  addUser(formValue: any): void {
-    try {
-      this.http
-      .get<{ csrfToken: string }>('api/csrf-token', { withCredentials: true })
-      .subscribe((csrfResponse) => {
-        this.http.post<{message: string, user: User}>(
-          '/api/register',
-          { user: formValue },
-          {
-            headers: { 'X-CSRF-Token': csrfResponse.csrfToken },
-            withCredentials: true,
-          }
-        ).subscribe((response) => {
-          console.log(response);
-          this.usersSignal.update((users) => [...users, response.user]);
-        })
-      })
-    } catch (error) {
-      this.showMessage();
-      console.error(error);
-    }
-  }
+  //addUser(formValue: any): void {
+  //  try {
+  //    this.http
+  //    .get<{ csrfToken: string }>('api/csrf-token', { withCredentials: true })
+  //    .subscribe((csrfResponse) => {
+  //      this.http.post<{message: string, user: User}>(
+  //        '/api/register',
+  //        { user: formValue },
+  //        {
+  //          headers: { 'X-CSRF-Token': csrfResponse.csrfToken },
+  //          withCredentials: true,
+  //        }
+  //      ).subscribe((response) => {
+  //        console.log(response);
+  //        this.usersSignal.update((users) => [...users, response.user]);
+  //      })
+  //    })
+  //  } catch (error) {
+  //    this.showMessage();
+  //    console.error(error);
+  //  }
+  //}
 
   removeUser(id: number): void {
     try {
@@ -181,7 +204,7 @@ export class UserService {
   }
 
   showMessage(): void {
-    this.snackBar.open("Something went wrong. Please check your connection and try again later."), { duration: 3000 };
+    this.snackBar.open("Something went wrong. Please check your connection and try again later."), "Close", { duration: 3000 };
   }
 
   //addUser(data: {gender: string, name: string, birthDate: string}): Observable<Users> {
