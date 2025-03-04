@@ -23,9 +23,9 @@
     </mat-form-field>
     <div style="display: block;">
         <mat-label>Image</mat-label>
-        <input type="file" (change)="onFileSelected($event, 'file')" />
+        <input type="file" (change)="onFileSelected($event, 'image')" />
         <mat-label>Image2</mat-label>
-        <input type="file" (change)="onFileSelected($event, 'blob')" />
+        <input type="file" (change)="onFileSelected($event, 'image2')" />
     </div>
     <button type="submit" [disabled]="registerForm.invalid" mat-raised-button style="display: block;">Registar</button>
 </form>

@@ -7,7 +7,15 @@ import { Router } from '@angular/router';
 import { response } from 'express';
 import { error } from 'console';
 
-
+interface UploadRes {
+  /**
+   * The image filename
+   */
+  image?: string;
+  /**
+   * The guid of the uploaded image on `uploads` table
+   */
+  image2?: string}
 @Injectable({
   providedIn: 'root',
 })
@@ -54,39 +62,15 @@ export class UserService {
       );
   }
 
-  upload(files: {image?: File | null; image2?: File | null}): Observable<{ filename?: string; guid?: string}> {
-    return new Observable(observer => {
+  upload(files: {image?: File | null; image2?: File | null}): Observable<UploadRes> {
       const formData = new FormData();
       if (files.image) {
         formData.append('image', files.image);
       }
       if (files.image2) {
-        const reader = new FileReader();
-        reader.readAsDataURL(files.image2);
-        reader.onload = () => {
-          const base64String = (reader.result as string).split(',')[1];
-          formData.append('image2', base64String);
-          this.http.post<{ filename?: string; guid?: string }>('/api/upload', formData, { headers: {'Accept': 'application/json'}}).subscribe({
-            next: (response) => {
-              console.log('Upload response:', response);
-              observer.next(response);
-              observer.complete();
-            },
-            error: (error) => observer.error(error)
-          })
-        }
-        reader.onerror = error => observer.error(error);
-      } else {
-        this.http.post<{ filename?: string; guid?: string }>('/api/upload', formData, { headers: { 'Accept': 'application/json' }}).subscribe({
-          next: (response) => {
-            console.log('Upload response:', response);
-            observer.next(response);
-            observer.complete();
-          },
-          error: (error) => observer.error(error)
-        })
+        formData.append('image2', files.image2);
       }
-    })
+      return this.http.post<UploadRes>('/api/upload', formData, { headers: { 'Accept': 'application/json' }})
   }
 
   //uploadToDatabase(file: File): Observable<string> {
@@ -129,7 +113,7 @@ export class UserService {
               this.router.navigateByUrl('/home');
             } else {
               this.usersSignal.update((users) => [...users, response.user]);
-            } 
+            }
           });
       });
     } catch (error) {
@@ -192,7 +176,7 @@ export class UserService {
         console.error(error);
         this.showMessage();
       }
-    }  
+    }
   }
 
   filterMenUsers(): User[] {

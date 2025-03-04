@@ -1,4 +1,4 @@
-import { Component, inject, Input } from '@angular/core';
+import {Component, inject, Input, OnInit} from '@angular/core';
 import { UserService } from '../../services/users.service';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
@@ -13,6 +13,7 @@ import { HttpClient } from '@angular/common/http';
 import { User } from '../user';
 import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
+import {environment} from '../../environments/environment';
 
 @Component({
   selector: 'app-user-register',
@@ -23,7 +24,7 @@ import { forkJoin, of } from 'rxjs';
   templateUrl: './user-register.component.html',
   styleUrl: './user-register.component.css'
 })
-export class UserRegisterComponent {
+export class UserRegisterComponent implements OnInit {
   userService = inject(UserService);
   http = inject(HttpClient);
   router = inject(Router);
@@ -62,11 +63,25 @@ export class UserRegisterComponent {
     image2: new FormControl<File | null>(null)
   });
 
+  ngOnInit() {
+    if (!environment.production) {
+      const b = 'test_' + new Date().getTime();
+      this.registerForm.patchValue({
+        email:b+ '@gmail.com',
+        password: '123456',
+        gender: 'Male',
+        name: b,
+        birthDate: '2010-01-01',
+      })
+    }
+  }
   onRegister() : void {
     const formValue = this.registerForm.getRawValue();
+    console.log(formValue);
     formValue.birthDate = new Date(formValue.birthDate).toISOString().slice(0,10);
     const file: File | null = formValue.image ?? null;
     const file2: File | null = formValue.image2 ?? null;
+    console.log(formValue);
     if (!file && !file2) {
       this.userService.register(formValue, this.state);
       return;
@@ -78,8 +93,8 @@ export class UserRegisterComponent {
     this.userService.upload(files).subscribe(response => {
       this.userService.register({
         ...formValue,
-        image: response.filename ?? null,
-        image2: response.guid ?? null
+        image: response.image ?? null,
+        image2: response.image2 ?? null
       },
         this.state
       );
@@ -98,11 +113,11 @@ export class UserRegisterComponent {
     //  this.userService.filename.set(null);
     //  if (this.state === true) {
     //    this.router.navigateByUrl('/home');
-    //  }  
+    //  }
     //})
   }
 
-  onFileSelected(event: Event, type: 'file' | 'blob'): void {
+  /*onFileSelected(event: Event, type: 'file' | 'blob'): void {
     const input = event.target as HTMLInputElement;
     console.log(input!.files?.[0]); // files from html input
     if (input.files?.length) {
@@ -114,6 +129,14 @@ export class UserRegisterComponent {
     } else {
       this.registerForm.get('image')?.setValue(null);
       this.registerForm.get('image2')?.setValue(null);
+    }
+  }*/
+  onFileSelected(event: Event, type: 'image' | 'image2'): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) {
+      this.registerForm.controls[type]?.setValue(input.files[0]);
+    } else {
+      this.registerForm.controls[type]?.setValue(null);
     }
   }
 }
