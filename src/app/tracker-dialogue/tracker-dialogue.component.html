@@ -1,11 +1,11 @@
 @if (visibleForm) {
-    <form (submit)="addTracker()" [formGroup]="trackerForm">
-        <h2>New Tracker</h2>
-        <div class="toggle-button-div">
-            <h4>Device</h4>
-            <button type="button" (click)="toggleForm()" mat-button>New</button>
+    <form class="px-9 h-full flex flex-col justify-center mt-2" (submit)="addTracker()" [formGroup]="trackerForm">
+        <h2 class="font-medium">New Tracker</h2>
+        <div id="first" class="flex justify-between items-center">
+            <h4 class="text-base font-normal text-(--text-dialog) m-2.5">Device</h4>
+            <button class="cursor-pointer hover:bg-(--bg-primary-color)" type="button" (click)="toggleForm()" mat-button>New</button>
         </div>
-        <mat-form-field class="input-size" appearance="outline">
+        <mat-form-field class="block" appearance="outline">
             <mat-select formControlName="id_device">
                 @for (device of socketService.devicesSignal(); track device) {
                 <mat-option [value]="device.id">{{ device.name }}</mat-option>
@@ -14,27 +14,26 @@
                 }
               </mat-select>
         </mat-form-field>
-            <button class="submit-button" type="submit" [disabled]="trackerForm.invalid" mat-raised-button>Save</button>
+            <button class="w-full mt-4 text-xl border-0 rounded-lg text-center cursor-pointer" type="submit" [disabled]="trackerForm.invalid" mat-raised-button>Save</button>
 
     </form>
 } @else {
-    <form (submit)="addDevice()" [formGroup]="deviceForm">
-        <div class="toggle-button-div back">
+    <form class="px-9 h-full flex flex-col justify-center" (submit)="addDevice()" [formGroup]="deviceForm">
+        <div class="flex justify-between items-center w-5/10 md:w-3/10">
             <button (click)="toggleForm()" mat-icon-button>
                 <mat-icon>arrow_back</mat-icon>
             </button>
-            <h2>New Device</h2>
+            <h2 class="font-medium">New Device</h2>
         </div>
-        <h4>Device Name</h4>
-        <mat-form-field class="input-size" appearance="outline">
+        <h4 class="text-base font-normal text-(--text-dialog) m-2.5">Device Name</h4>
+        <mat-form-field class="block" appearance="outline">
             <input type="text" matInput formControlName="name"/>
         </mat-form-field>
-        <h4>Station Name</h4>
-        <mat-form-field class="input-size" appearance="outline">
+        <h4 class="text-base font-normal text-(--text-dialog) m-2.5">Station Name</h4>
+        <mat-form-field class="block" appearance="outline">
             <input type="text" matInput formControlName="stationName"/>
         </mat-form-field>
-            <button class="submit-button" type="submit" [disabled]="deviceForm.invalid" mat-raised-button>Save</button>
-
+            <button class="w-full mt-4 text-xl border-0 rounded-lg text-center" type="submit" [disabled]="deviceForm.invalid" mat-raised-button>Save</button>
     </form>
 }
 

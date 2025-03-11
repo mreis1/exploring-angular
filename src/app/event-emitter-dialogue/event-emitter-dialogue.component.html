@@ -1,7 +1,7 @@
-<form (submit)="addEvent()" [formGroup]="form">
-  <h2>Emit an event</h2>
-  <h4>Device</h4>
-  <mat-form-field appearance="outline" class="input-size">
+<form class="px-9 h-full flex flex-col justify-center" (submit)="addEvent()" [formGroup]="form">
+  <h2 class="font-medium">Emit an event</h2>
+  <h4 class="text-base font-normal text-(--text-dialog) m-2.5">Device</h4>
+  <mat-form-field appearance="outline" class="block">
     <mat-select formControlName="id_device">
       @for (tracker of socketService.trackersSignal(); track tracker) {
       <mat-option [value]="tracker.id_device">{{ tracker.name }}</mat-option>
@@ -10,8 +10,8 @@
       }
     </mat-select>
   </mat-form-field>
-  <h4>State</h4>
-  <div>
+  <h4 class="text-base font-normal text-(--text-dialog) m-2.5">State</h4>
+  <div class="flex justify-between">
     <mat-radio-group formControlName="state">
       <mat-radio-button value="Everthing ok">Valid</mat-radio-button>
       <mat-radio-button value="Error">Error</mat-radio-button>
@@ -26,8 +26,8 @@
         </mat-form-field>
     }
   </div>
-  <h4>Who</h4>
-  <mat-form-field appearance="outline" class="input-size">
+  <h4 class="text-base font-normal text-(--text-dialog) m-2.5">Who</h4>
+  <mat-form-field appearance="outline" class="block">
     <mat-label>Type here to search a user</mat-label>
     <input
       type="text"
@@ -42,5 +42,5 @@
       }
     </mat-autocomplete>
   </mat-form-field>
-  <button class="button" type="submit" [disabled]="form.invalid" mat-raised-button>Save</button>
+  <button class="w-full mt-4 text-xl border-0 rounded-lg text-center" type="submit" [disabled]="form.invalid" mat-raised-button>Save</button>
 </form>

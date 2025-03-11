@@ -20,8 +20,8 @@ export class CountComponent {
 
   readonly labelsByMode: {[key in Mode]: string} = {
     [Mode.All]: 'Total Users',
-    [Mode.Female]: 'Total Female',
-    [Mode.Male]: 'Total Male',
+    [Mode.Male]: 'Male Users',
+    [Mode.Female]: 'Female Users',
   }
 
   changeCount(): number {

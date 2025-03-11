@@ -100,37 +100,8 @@ export class UserRegisterComponent implements OnInit {
       );
       this.userService.filename.set(null);
     })
-    /**
-     * 1. tabela para os UPLOAD
-     *  id(guid) <-- ids não enumeráveis por questões de segurança
-     *  path     <-- para o file no filesystem
-     *
-     */
-    //forkJoin([multerUpload$, blobUpload$]).subscribe(([filename, base64Image]) => {
-    //  formValue.image = filename || null; // enviar o guid do upload respectivo
-    //  formValue.image2 = base64Image || null; // enviar o guid do upload respectivo
-    //  this.userService.register(formValue, this.state);
-    //  this.userService.filename.set(null);
-    //  if (this.state === true) {
-    //    this.router.navigateByUrl('/home');
-    //  }
-    //})
   }
 
-  /*onFileSelected(event: Event, type: 'file' | 'blob'): void {
-    const input = event.target as HTMLInputElement;
-    console.log(input!.files?.[0]); // files from html input
-    if (input.files?.length) {
-      if (type === 'file') {
-       this.registerForm.get('image')?.setValue(input.files[0]);
-      } else {
-        this.registerForm.get('image2')?.setValue(input.files[0]);
-      }
-    } else {
-      this.registerForm.get('image')?.setValue(null);
-      this.registerForm.get('image2')?.setValue(null);
-    }
-  }*/
   onFileSelected(event: Event, type: 'image' | 'image2'): void {
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {

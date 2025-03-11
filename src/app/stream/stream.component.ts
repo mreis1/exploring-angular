@@ -58,14 +58,15 @@ export class StreamComponent implements OnInit {
       height: '500px',
       data: {
           device_id: track?.id_device
-      }
+      },
+      panelClass: 'md:top-5'
     });
   }
 
   openTrackerDialogue(): void {
     this.dialog.open(TrackerDialogueComponent, {
       width: '500px',
-      height: '475px',
+      height: '350px',
     });
   }
 

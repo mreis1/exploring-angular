@@ -1,0 +1,29 @@
+@layer components {
+    .table-cells {
+        padding-block: 0.5rem;
+        padding-inline: 1rem;
+        border-bottom-width: 1px;
+        border-color: var(--color-gray-300);
+    }
+    .link-button {
+        font-size: var(--text-lg);
+        line-height: var(--tw-leading, var(--text-lg--line-height));
+        font-weight: 700;
+        cursor: pointer;
+        &.active {
+            text-decoration: underline;
+        }
+    }
+    .icon-color {
+        color: rgb(211, 42, 42);
+    } 
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .overflow-x-auto {
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
+  }

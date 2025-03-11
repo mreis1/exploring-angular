@@ -1,31 +1,64 @@
-<form [formGroup]="registerForm" (submit)="onRegister()">
-    <mat-form-field>
-        <mat-label>Email</mat-label>
-        <input type="text" matInput formControlName="email" />
-    </mat-form-field>
-    <mat-form-field style="display: block;">
-        <mat-label>Password</mat-label>
-        <input type="password" matInput formControlName="password" />
-    </mat-form-field>
-    <mat-radio-group formControlName="gender">
-        <mat-radio-button value="Male">Male</mat-radio-button>
-        <mat-radio-button value="Female">Female</mat-radio-button>
-    </mat-radio-group>
-    <mat-form-field style="display: block;">
-        <mat-label>Name</mat-label>
-        <input type="text" matInput formControlName="name" />
-    </mat-form-field>
-    <mat-form-field>
-        <mat-label>Date</mat-label>
-        <input [readonly]="true" placeholder="Date" matInput [matDatepicker]="picker" formControlName="birthDate"/>
-        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
-    </mat-form-field>
-    <div style="display: block;">
-        <mat-label>Image</mat-label>
-        <input type="file" (change)="onFileSelected($event, 'image')" />
-        <mat-label>Image2</mat-label>
-        <input type="file" (change)="onFileSelected($event, 'image2')" />
-    </div>
-    <button type="submit" [disabled]="registerForm.invalid" mat-raised-button style="display: block;">Registar</button>
-</form>
+<div *ngIf="state === false" class="flex gap-4 mb-3">
+    <p class="text-lg font-bold">Add a new user</p>
+</div>
+
+<div [ngClass]="state === false ? 'flex flex-col items-center w-full px-4' : 'mt-10 sm:mx-auto sm:w-full sm:max-w-sm'">
+    <form class="space-y-6" [formGroup]="registerForm" (submit)="onRegister()">
+        <div class="flex flex-col lg:flex-row lg:gap-2 mb-0 w-full">
+            <div [ngClass]="state === false ? 'w-full lg:w-1/2 mb-4 lg:mb-0' : 'w-1/2'">
+                <mat-label class="block text-sm/6 font-medium text-(--bg-quaternary-color)">Email address</mat-label>
+                <mat-form-field appearance="outline" class="mt-1">
+                    <input placeholder="example@example.com" class="w-full rounded-md px-3 py-1.5 text-base bg-(--bg-primary-color)" name="email" id="email" type="email" matInput formControlName="email" />
+                </mat-form-field>  
+            </div>
+            <div [ngClass]="state === false ? 'w-full lg:w-1/2' : 'w-1/2'">
+               <mat-label class="block text-sm/6 font-medium text-(--bg-quaternary-color)">Password</mat-label>
+                <mat-form-field appearance="outline" class="mt-1">
+                    <input placeholder="********" class="w-full rounded-md px-3 py-1.5 text-base bg-(--bg-primary-color)" name="password" id="password" type="password" matInput formControlName="password" />
+                </mat-form-field> 
+            </div>
+        </div>
+        <div class="flex flex-col lg:flex-row lg:gap-2 mb-0 w-full">
+            <div [ngClass]="state === false ? 'w-full lg:w-1/2 mb-4 lg:mb-0' : 'w-1/2'">
+                <mat-label class="block text-sm/6 font-medium text-(--bg-quaternary-color)">Name</mat-label>
+                <mat-form-field appearance="outline" class="mt-1">
+                    <input placeholder="James" class="w-full rounded-md px-3 py-1.5 text-base bg-(--bg-primary-color) placeholder: opacity-70:" name="name" id="name" type="text" matInput formControlName="name" />
+                </mat-form-field>   
+            </div>
+            <div [ngClass]="state === false ? 'w-full lg:w-1/2' : 'w-1/2'">
+                <mat-label class="block text-sm/6 font-medium text-(--bg-quaternary-color)">Date</mat-label>
+                <mat-form-field appearance="outline" class="mt-1">
+                    <input [readonly]="true" id="date" name="date" matInput [matDatepicker]="picker" formControlName="birthDate" class="w-full rounded-md px-3 py-1.5 text-base bg-(--bg-primary-color)"/>
+                    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+            </div>
+        </div>
+        <div class="mb-0">
+            <mat-label class="block text-sm/6 font-medium text-(--bg-quaternary-color)">Gender</mat-label>
+            <mat-radio-group [ngClass]="{'custom-radio' : state}" formControlName="gender">
+                <mat-radio-button value="Male">Male</mat-radio-button>
+                <mat-radio-button value="Female">Female</mat-radio-button>
+            </mat-radio-group>
+        </div>
+        <div class="flex gap-2 mb-0 mt-4">
+            <div class="w-1/2 flex gap-2 items-center justify-center">
+                <mat-label class="inline text-sm font-medium text-(--bg-quaternary-color)">Image</mat-label>
+                <label for="image" class="text-center rounded-md bg-white px-2.5 py-1.5 text-sm ring-1 shadow-xs ring-gray-300 ring-inset cursor-pointer">
+                  Upload
+                </label>
+                <input id="image" name="image" type="file" (change)="onFileSelected($event, 'image')" class="hidden" />
+            </div>
+            <div class="w-1/2 flex gap-2 items-center justify-center">
+                <mat-label class="inline text-sm font-medium text-(--bg-quaternary-color)">Image2</mat-label>
+                <label for="image2" class="text-center rounded-md bg-white px-2.5 py-1.5 text-sm ring-1 shadow-xs ring-gray-300 ring-inset cursor-pointer">
+                  Upload
+                </label>
+                <input id="image2" name="image2" type="file" (change)="onFileSelected($event, 'image2')" class="hidden" />
+            </div> 
+        </div>
+        <div [ngClass]="state === false ? 'flex justify-end mt-4' : 'mt-10'">
+            <button type="submit" class="flex w-full justify-center rounded-xl bg-(--bg-senary-color) px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 cursor-pointer">Register</button>
+        </div>
+    </form>
+</div>

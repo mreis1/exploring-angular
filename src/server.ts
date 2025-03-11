@@ -126,34 +126,10 @@ app.post('/api/upload', upload.fields([{name: 'image', maxCount: 1}, {name: 'ima
       await db.execute(query, [id, file!.path]);
       return id;
     }
-
     res.status(200).json({
       image: file?.filename ?? null,
       image2: file2 ? await upload(file2) : null
     })
-
-    // res.status(500).send('File uploaded ko.');
-    /*console.log(file);
-    const { image2 } = req.body;
-    console.log(image2);
-    let fileResponse = null;
-    let image2Guid = null;
-    if (!file && !image2) {
-      console.error("No images provided");
-      return res.status(400).json({ message: "File upload failed, no images where provided" });
-    }
-    if (file && image2 && typeof image2 === 'string') {
-      fileResponse = file.filename;
-      image2Guid = uuidv4();
-      // const filePath = path.join(uploadDir, `${image2Guid}.jpg`); //@todo fix hardcoded filepath
-      const query = 'INSERT INTO uploads (id, file_path) VALUES (?, ?)';
-      await db.execute(query, [image2Guid, file.path]);
-      console.log('Temporary upload', file.path);
-    }
-    return res.status(200).json({
-      filename: fileResponse ?? null,
-      image2: image2Guid ?? null
-    })*/
   } catch (error) {
     return next(error);
   }
@@ -161,22 +137,6 @@ app.post('/api/upload', upload.fields([{name: 'image', maxCount: 1}, {name: 'ima
 
 app.use('/upload', express.static(uploadDir));
 
-//app.post('/api/upload-blob', async (req, res, next) => {
-//  try {
-//    const { image2 } = req.body;
-//    if (!image2 || typeof image2 !== 'string') {
-//      return res.status(400).json({ message: 'No image provided' });
-//    }
-//    const guid = uuidv4();
-//    const filePath = path.join(uploadDir, `${guid}.jpg`);
-//    const query = 'INSERT INTO uploads (id, file_path) VALUES (?, ?)';
-//    await db.execute(query, [guid, filePath]);
-//    console.log('Temporary upload', filePath);
-//    return res.status(200).json({ guid });
-//  } catch (error) {
-//    return next(error);
-//  }
-//});
 const getFilePathFromImageGuid = async (guid: string) => {
   const querySelect = 'SELECT file_path FROM uploads WHERE id = ?';
   const [rows]: any = await db.execute(querySelect, [guid]);
@@ -184,34 +144,6 @@ const getFilePathFromImageGuid = async (guid: string) => {
     throw new Error('File not found in temporary storage');
   }
   return rows[0].file_path;
-}
-const migrateImage = async (guid: string, userId: number) => {
-  try {
-    if (!guid || !userId) {
-      throw new Error('Missing guid or userId');
-    }
-    const newFilePath = path.join(mediaDir, `${guid}.jpg`);
-    if (fs.existsSync(newFilePath)) {
-      console.log(`Image2 already exists in file system for userId ${userId} with path: ${newFilePath}`);
-      return newFilePath;
-    }
-    const querySelect = 'SELECT file_path FROM uploads WHERE id = ?';
-    const [rows]: any = await db.execute(querySelect, [guid]);
-    if (!rows.length) {
-      throw new Error('File not found in temporary storage');
-    }
-    const tempFilePath = rows[0].file_path;
-    await fsAsync.rename(tempFilePath, newFilePath);
-    const queryUpdate = 'UPDATE rxjs.users SET image2 = ? WHERE id = ?';
-    await db.execute(queryUpdate, [newFilePath, userId]);
-    console.log(`Image migrated successfully for userId ${userId}`);
-    const queryDelete = 'DELETE FROM uploads WHERE id = ?';
-    await db.execute(queryDelete, [guid]);
-    return newFilePath;
-  } catch (error) {
-    console.error('Error migrating image2', error);
-    throw error;
-  }
 }
 
 app.use((req: Request, res: Response, next: NextFunction) => {

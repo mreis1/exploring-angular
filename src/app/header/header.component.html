@@ -1,10 +1,10 @@
-<mat-toolbar class="toolbar">
-    <div>
-        <a (click)="setActive('home')" [ngClass]="{'active': activeLink === 'home'}" routerLink="/home">Users</a>
-        <a (click)="setActive('stream')" [ngClass]="{'active': activeLink === 'stream'}" routerLink="/stream">Stream</a>
+<mat-toolbar class="justify-between fixed top-0 left-0 right-0 z-10 shadow-md min-h-5">
+    <div class="flex gap-5 ml-2.5">
+        <a class="link" (click)="setActive('home')" [ngClass]="{'active': activeLink === 'home'}" routerLink="/home">Users</a>
+        <a class="link" (click)="setActive('stream')" [ngClass]="{'active': activeLink === 'stream'}" routerLink="/stream">Stream</a>
     </div>
-    <div>
-        <span>Hi, {{userService.currentUserSignal()?.name}}!</span>
-        <span (click)="onLogout()" mat-button>Logout</span>    
+    <div class="mr-2.5 flex gap-2.5">
+        <span class="text-base ">Hi, {{userService.currentUserSignal()?.name}}!</span>
+        <span class="text-base text-(--bg-tertiary-color) cursor-pointer hover:underline" (click)="onLogout()" mat-button>Logout</span>    
     </div>
 </mat-toolbar>

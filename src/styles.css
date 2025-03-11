@@ -3,3 +3,14 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+:root {
+    --bg-primary-color: whitesmoke;
+    --bg-secondary-color: pink;
+    --bg-tertiary-color: red;
+    --bg-quaternary-color: gray;
+    --bg-quinary-color: darkorange;
+    --bg-senary-color: deeppink;
+    --bg-opaque: rgba(255, 140, 0, .2);
+    --text-dialog: steelblue;
+}

@@ -1,48 +1,20 @@
-<app-header></app-header>
-
-
-
-<!--Tailwind block-->
-<div style="margin-top: 160px;">
-  <div class="mx-auto flex max-w-sm items-center gap-x-4 rounded-xl bg-white p-6 shadow-lg outline outline-black/5 dark:bg-slate-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10">
-    <img class="size-12 shrink-0" src="/favicon.ico" alt="ChitChat Logo" />
-    <div>
-      <div class="text-xl font-medium text-black dark:text-white">ChitChat</div>
-      <p class="text-gray-500 dark:text-gray-400">You have a new message!</p>
+<div class="bg-white w-full h-full pt-20">
+  <app-header></app-header>
+  <div class="mx-5 mb-6">
+    <mat-grid-list gutterSize="20px" [cols]="gridCols" rowHeight="150px">
+    @for (mode of modes; track mode) {
+      <mat-grid-tile [ngClass]="changeBgColor(mode)" class="p-6 rounded-lg shadow-md outline-(--bg-quaternary-color) outline-1">
+        <app-count class="flex flex-col w-full ml-6" [mode]="mode"></app-count>
+      </mat-grid-tile>
+    }
+    </mat-grid-list> 
+  </div>
+  <div class="mx-5 flex flex-wrap gap-0">
+    <div class="w-full md:w-1/2 mb-5 p-6">
+      <app-user-register [state]="false"></app-user-register>
+    </div>
+    <div class="w-full md:w-1/2 mb-5 p-6 rounded-lg outline-1 outline-(--bg-quaternary-color) bg-(--bg-primary-color)">
+      <app-users></app-users>
     </div>
   </div>
 </div>
-
-
-<mat-grid-list
-  gutterSize="16px"
-  rowHeight="3:1"
-  cols="4"
-  style="padding-top: 125px; width: 50%; margin-left: 30px"
->
-  <mat-grid-tile style="background-color: lightgray">
-    <app-count [mode]="1"></app-count>
-  </mat-grid-tile>
-  <mat-grid-tile style="background-color: lightgray">
-    <app-count [mode]="2"></app-count>
-  </mat-grid-tile>
-  <mat-grid-tile style="background-color: lightgray">
-    <app-count [mode]="3"></app-count>
-  </mat-grid-tile>
-
-
-
-</mat-grid-list>
-<mat-grid-list
-  gutterSize="50px"
-  rowHeight="1:1"
-  cols="2"
-  style="margin-left: 30px"
->
-  <mat-grid-tile class="padding" style="background-color: lightgray; height: 50%">
-    <app-user-register [state]="false"></app-user-register>
-  </mat-grid-tile>
-  <mat-grid-tile class="no-padding" style="height: 50%; overflow: visible;">
-      <app-user-list></app-user-list>
-  </mat-grid-tile>
-</mat-grid-list>

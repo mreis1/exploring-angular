@@ -1,63 +1,79 @@
-<app-header></app-header>
-<div class="container">
-  <mat-grid-list *ngFor="let tracker of socketService.trackersSignal()" [cols]="cols" gutterSize="10px" rowHeight="1:1" class="grid">
-    <div class="device block">
-      <div class="device-header">
-        <div>
-          <span>{{ tracker.name }}</span>
-          <span>{{ tracker.stationName }}</span>
-        </div>
-        <div>
-          @let activity = (tracker?.last_activity | date:'shortTime');
-          @if (tracker.last_activity) {
-            <span>Activity over past </span>
-            <span>{{ activity }}</span>
-          } @else {
-            <span>No activity</span>
-          }
-        </div>
-      </div>
-      <mat-card appearance="outlined" class="card">
-        <mat-card-content style="flex: 1;">
-          <div style="margin-bottom: 10px;" *ngFor="let event of socketService.eventsSignal()">
-            <div class="time">
-              @let time = (event?.created_at | date:'shortTime');
-              @let timeAgo = (event?.created_at | timeAgo);
-              @if (event.created_at) {
-                <span>{{ time }}</span>
-                <span>{{ timeAgo }}</span>
-              } @else {
-                <span>No time available</span>
-              }
+<div class="bg-white w-full h-full pt-20">
+  <app-header></app-header>
+  <div class="grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+    <ng-container *ngFor="let tracker of socketService.trackersSignal()">
+      <div class="mx-5 pb-0">
+        <div class="block w-full lg:h-screen">
+          <div class="flex justify-between text-sm mb-2">
+            <div class="flex justify-between w-2/5 text-gray-500">
+              <span class="font-medium text-xs lg:text-base">{{ tracker.name }}</span>
+              <span class="text-xs lg:text-base">{{ tracker.stationName }}</span>
             </div>
-            <div class="item">
-              <img [src]="imageUrl(event.id_user)" alt="" mat-card-avatar class="avatar" />
-              <div>
-                @let name = getUser(event.id_user)?.name;
-                <p>{{ name }}</p>
-                <p class="valid" *ngIf="!event.error_code">{{ event.state }}</p>
-                <p class="error" *ngIf="event.error_code">{{event.error_code}}</p>
-              </div>
+            <div class="opacity-20 text-xs lg:text-base">
+              <ng-container *ngIf="tracker.last_activity; else noActivity">
+                <span>Activity over past </span>
+                <span class="underline">
+                  {{ tracker.last_activity | date:'shortTime' }}
+                </span>
+              </ng-container>
+              <ng-template #noActivity>
+                <span>No activity</span>
+              </ng-template>
             </div>
           </div>
-        </mat-card-content>
-        <mat-card-footer class="footer">
-          <button (click)="removeTracker(tracker.id)" mat-fab matTooltip="Delete the tracker" matTooltipPosition="above">
-            <mat-icon>delete</mat-icon>
-          </button>
-          <button (click)="openEventDialogue(tracker)" mat-fab>
-            <mat-icon>add</mat-icon>
-          </button>
-        </mat-card-footer>
-      </mat-card>
-    </div>
-  </mat-grid-list>
-  <div class="tracker">
-    <p>Want to track more ac points?</p>
-    <p>Just click the button below and follow along.</p>
-    <button (click)="openTrackerDialogue()" mat-raised-button>
+          <mat-card appearance="outlined" class="px-4 pt-0 lg:h-8/10">
+            <mat-card-content class="flex-1">
+              <div class="mb-4" *ngFor="let event of socketService.eventsSignal()">
+                <div class="flex justify-between md:w-full w-1/2 text-gray-500 lg:text-xl text-base mb-1">
+                  <ng-container *ngIf="event.created_at; else noTime">
+                    <span class="font-normal">{{ event.created_at | date:'shortTime' }}</span>
+                    <span class="text-sm opacity-70 flex items-end">
+                      {{ event.created_at | timeAgo }}
+                    </span>
+                  </ng-container>
+                  <ng-template #noTime>
+                    <span>No time available</span>
+                  </ng-template>
+                </div>
+                <div class="flex justify-between items-center bg-white rounded-lg shadow-md h-1/2">
+                  <img [src]="imageUrl(event.id_user)" alt="" mat-card-avatar class="ml-1 my-3">
+                  <div class="w-4/5">
+                    <p class="text-xl font-medium mb-1">
+                      {{ getUser(event.id_user)?.name }}
+                    </p>
+                    <p *ngIf="!event.error_code" class="text-sm text-gray-500 opacity-70 mb-1">
+                      {{ event.state }}
+                    </p>
+                    <p *ngIf="event.error_code" class="text-sm text-(--bg-tertiary-color) bg-(--bg-secondary-color) rounded-lg pl-2 w-2/3 h-6 flex items-center mb-1">
+                      {{ event.error_code }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+            <mat-card-footer class="flex justify-between mt-4 mb-2">
+              <button (click)="removeTracker(tracker.id)" mat-fab matTooltip="Delete the tracker" matTooltipPosition="above">
+                <mat-icon>delete</mat-icon>
+              </button>
+              <button (click)="openEventDialogue(tracker)" mat-fab class="rounded-full bg-white">
+                <mat-icon>add</mat-icon>
+              </button>
+            </mat-card-footer>
+          </mat-card>
+        </div>
+      </div>
+    </ng-container>
+    <div class="flex flex-col justify-center items-center p-4">
+      <p class="text-center text-xs sm:text-sm md:text-base font-medium">
+        Want to track more ac points?
+      </p>
+      <p class="text-center text-xs sm:text-sm md:text-base">
+        Just click the button below and follow along.
+      </p>
+      <button (click)="openTrackerDialogue()" mat-raised-button class="mt-2 cursor-pointer">
         <mat-icon>add</mat-icon>
         New Tracker
-    </button>
+      </button>
+    </div>
   </div>
 </div>

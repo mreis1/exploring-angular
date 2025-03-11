@@ -1,0 +1,14 @@
+::ng-deep .custom-radio .mdc-radio__outer-circle {
+    border-color: var(--bg-quinary-color) !important;
+}
+
+::ng-deep .custom-radio .mdc-radio__inner-circle {
+    border-color: var(--bg-quinary-color) !important;
+}
+
+::ng-deep .mdc-button {
+    background-color: var(--bg-senary-color) !important;
+    color: var(--color-white) !important;
+    border-radius: var(--radius-xl) !important;
+}
+

@@ -28,6 +28,7 @@ export class AuthComponent {
   userService = inject(UserService);
   http = inject(HttpClient);
   router = inject(Router);
+  switcher: 'login' | 'register' = 'login';
 
   loginForm: FormGroup<{
     email: FormControl<string>;
@@ -52,14 +53,16 @@ export class AuthComponent {
       ).subscribe(response => {
         console.log(response);
         this.userService.currentUserSignal.set(response.user);
-        // setTimeout(() => {
           this.router.navigateByUrl('/home');
-        // }, 100)
       })
     } catch (error) {
       this.userService.showMessage();
       console.error(error);
     }
+  }
+
+  set setSwitcher(switcher: 'login' | 'register') {
+    this.switcher = switcher;
   }
 }
 

@@ -1,23 +1,96 @@
-<mat-grid-list
-    cols="2"
-    rowHeight="2:1"
-    gutterSize="25px"
-    style="margin-top: 120px; margin-left: 20px; margin-right: 20px;"
->
-    <mat-grid-tile style="background-color: lightgray; height: 50%;">
-        <form [formGroup]="loginForm" (submit)="onLogin()">
-            <mat-form-field>
-                <mat-label>Email</mat-label>
-                <input type="text" matInput formControlName="email" />
-            </mat-form-field>
-            <mat-form-field style="display: block;">
-                <mat-label>Password</mat-label>
-                <input type="password" matInput formControlName="password" />
-            </mat-form-field>
-            <button type="submit" [disabled]="loginForm.invalid" mat-raised-button style="display: block;">Entrar</button>
-        </form>
-    </mat-grid-tile>
-    <mat-grid-tile style="background-color: lightgray; height: 50%;">
-        <app-user-register [state]="true"></app-user-register>
-    </mat-grid-tile>
-</mat-grid-list>
+<div class="h-full bg-white">
+  <div class="flex min-h-[500px] flex-col justify-center px-6 py-12 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+      @if (switcher === 'login') {
+      <h2
+        class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900"
+      >
+        Sign in to your account
+      </h2>
+      } @else {
+      <h2
+        class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900"
+      >
+        Create a new account
+      </h2>
+      }
+    </div>
+    @if (switcher === 'login') {
+    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+      <form class="space-y-6" [formGroup]="loginForm" (submit)="onLogin()">
+        <div>
+          <mat-label
+            class="block text-sm/6 font-medium text-(--bg-quaternary-color)"
+            >Email address</mat-label
+          >
+          <mat-form-field appearance="outline" class="mt-1">
+            <input
+              placeholder="example@example.com"
+              class="w-full rounded-md px-3 py-1.5 text-base bg-(--bg-primary-color)"
+              name="email"
+              id="email"
+              type="email"
+              matInput
+              formControlName="email"
+            />
+          </mat-form-field>
+        </div>
+        <div>
+          <div class="flex justify-between">
+            <mat-label
+              class="block text-sm/6 font-medium text-(--bg-quaternary-color)"
+              >Password</mat-label
+            >
+            <div class="text-sm">
+              <a
+                href="#"
+                class="font-semibold text-(--bg-quinary-color) hover:text-(--bg-opaque)"
+                >Forgot password?</a
+              >
+            </div>
+          </div>
+          <mat-form-field appearance="outline" class="mt-1">
+            <input
+              placeholder="********"
+              class="w-full rounded-md px-3 py-1.5 text-base bg-(--bg-primary-color)"
+              name="password"
+              id="password"
+              type="password"
+              matInput
+              formControlName="password"
+            />
+          </mat-form-field>
+        </div>
+        <div>
+          <button
+            type="submit"
+            class="flex w-full justify-center rounded-md bg-(--bg-senary-color) px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 cursor-pointer"
+          >
+            Sign in
+          </button>
+        </div>
+      </form>
+    </div>
+    } @else {
+    <app-user-register [state]="true"></app-user-register>
+    }
+  </div>
+  <div class="flex justify-center gap-0.5 mb-4">
+    <p>
+      {{
+        switcher === "login"
+          ? "
+            Don't have an account?"
+          : "
+            Already have an account?"
+      }}
+    </p>
+    <button
+      class="mb-4 cursor-pointer underline hover:opacity-70"
+      type="button"
+      (click)="setSwitcher = switcher === 'login' ? 'register' : 'login'"
+    >
+      {{ switcher === "login" ? "Create one here!" : "Enter here!" }}
+    </button>
+  </div>
+</div>

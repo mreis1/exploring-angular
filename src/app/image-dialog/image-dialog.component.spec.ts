@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MaleListComponent } from './male-list.component';
+import { ImageDialogComponent } from './image-dialog.component';
 
-describe('MaleListComponent', () => {
-  let component: MaleListComponent;
-  let fixture: ComponentFixture<MaleListComponent>;
+describe('ImageDialogComponent', () => {
+  let component: ImageDialogComponent;
+  let fixture: ComponentFixture<ImageDialogComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MaleListComponent]
+      imports: [ImageDialogComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(MaleListComponent);
+    fixture = TestBed.createComponent(ImageDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
